@@ -23,8 +23,7 @@ int main(){
 
   data_write[0] = 1<<7;
   write(mux, data_write, 1);
-  if (vl2.begin()>0) 
-    printf("No Sensor Found\n");
+  vl2.begin() 
   
 
 
