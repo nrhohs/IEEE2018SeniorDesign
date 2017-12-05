@@ -1,3 +1,6 @@
+
+#include <PID_v1.h>
+#include <Encoder.h> 
 #include "Motors.h"
 
 Motor M[4] = 
@@ -9,40 +12,50 @@ Motor M[4] =
 }; 
               
 unsigned long lastMilli = 0;
+unsigned char incomingByte[2];
 
 void setup() {
   Serial.begin(9600);
-  int i;
-  for(i=0;i++;i<4) 
-    M[i].run(FORWARD);
+  incomingByte[0]=0;
+  incomingByte[1]=0;
+  for(int j=0;j<4;j++) {
+    M[j].run(FORWARD);
+  }
 }
 
 void loop() {
-  int i, j;
-  unsigned char incomingByte[2];
-  if (Serial.available()>0) {
-    incomingByte[i%2]=Serial.read();
-    i++;
-  }
-  int MotorNum = incomingByte[0]>>5;
-  int Dir = (incomingByte[0]>>3)&&0xFF;
-  int Speed = incomingByte[1];
-  if (Dir==STOP) 
-    M[MotorNum].run(STOP);
-  if(Dir==FORWARD)
-    M[MotorNum].run(FORWARD);
-  if(Dir==REVERSE)
-    M[MotorNum].run(REVERSE);
-  M[MotorNum].Setpoint = Speed; 
-  Serial.print(MotorNum); Serial.print("  ");
-  Serial.print(Dir); Serial.print("  ");
-  Serial.print(Speed); Serial.println("  ");
   
   if((millis()-lastMilli) >= LOOPTIME) {
     lastMilli = millis();
-    for(j=0;j++;j<4)
+
+    if (Serial.available()>0) {   
+      incomingByte[0]=Serial.read();
+      incomingByte[1]=Serial.read(); 
+    } 
+    
+    int MotorNum = (incomingByte[0]>>5);
+    int Dir = (incomingByte[0]>>3)&0x03;
+    int Speed = incomingByte[1];
+
+    Serial.print(incomingByte[0],HEX); Serial.print("  ");
+    Serial.print(M[MotorNum-1].IN1pin); Serial.print("  ");    
+    Serial.print(Dir); Serial.print("  ");
+    Serial.print(Speed); Serial.println("  ");
+
+    if (Dir==STOP) 
+      M[MotorNum-1].run(STOP);
+    else if(Dir==FORWARD) 
+      M[MotorNum-1].run(FORWARD);
+    else if(Dir==BACKWARD) 
+      M[MotorNum-1].run(BACKWARD);
+
+    M[MotorNum-1].Setpoint = Speed;
+
+    for(int j=0;j<4;j++) {
       M[j].updatePID();
-  }
+    }
+    
+  } 
 }
 
 

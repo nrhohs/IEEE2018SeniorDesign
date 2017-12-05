@@ -10,10 +10,9 @@ Motor::Motor(uint8_t motorID, uint8_t pin1, uint8_t pin2)
   IN1pin=0;
   IN2pin=0;
   prevCount=0;
-  Setpoint=200; 
+  Setpoint=0; 
   MPID.SetMode(AUTOMATIC);
   MPID.SetOutputLimits(-255,255);
-
   if(motorID == 1){
     PWMpin = M1PWMPIN;
     IN1pin = M1FPIN;
@@ -44,13 +43,18 @@ Motor::Motor(uint8_t motorID, uint8_t pin1, uint8_t pin2)
     IN1pin = M6FPIN;
     IN2pin = M6RPIN;
   }
+  else {
+    PWMpin = 0;
+    IN1pin = 0;
+    IN2pin = 0;
+  }
   pinMode(PWMpin, OUTPUT);
   pinMode(IN1pin, OUTPUT);
   pinMode(IN2pin, OUTPUT);
 }
 
 
-Motor::run(uint8_t cmd){
+void Motor::run(uint8_t cmd){
   if(cmd == FORWARD){
     digitalWrite(IN2pin,LOW);
     digitalWrite(IN1pin,HIGH);
@@ -60,12 +64,12 @@ Motor::run(uint8_t cmd){
     digitalWrite(IN2pin,HIGH);
   }  
   else if(cmd == STOP){
-    digitalWrite(IN2pin,LOW);
+    digitalWrite(IN1pin,LOW);
     digitalWrite(IN2pin,LOW);
   }  
 }
 
-Motor::setSpeed(uint8_t pwm){
+void Motor::setSpeed(uint8_t pwm){
   analogWrite(PWMpin, pwm);
 }
 
@@ -73,7 +77,6 @@ Motor::setSpeed(uint8_t pwm){
 void Motor::updatePID() {
   Position = MEncoder.read();
   Input = getRPM(Position);
-  Serial.println(int(Input));  
   MPID.Compute();
   MPWM = constrain(int(MPWM+Output),0,255);
   setSpeed(MPWM);

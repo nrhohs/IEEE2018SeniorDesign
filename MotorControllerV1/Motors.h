@@ -1,3 +1,4 @@
+
 #ifndef Motors_h
 #define Motors_h
 
@@ -39,11 +40,11 @@
 #define M6EnA      18
 #define M6EnB      49
 
-#define FORWARD 1
-#define BACKWARD 2
-#define STOP 0
+#define FORWARD    1
+#define BACKWARD   2
+#define STOP       3
 
-#define LOOPTIME    100
+#define LOOPTIME    150
 
 #define Kp          0.10
 #define Ki          0.05
@@ -53,15 +54,15 @@ class Motor
 {
  public:
   Motor(uint8_t MotorID,uint8_t pin1,uint8_t pin2);
-  run(uint8_t);
-  setSpeed(uint8_t);
+  void run(uint8_t);
+  void setSpeed(uint8_t);
   Encoder MEncoder;
   PID MPID;
   void updatePID();
   double  Setpoint;
+  uint8_t PWMpin, IN1pin, IN2pin, MPWM;
 
   private:
-  uint8_t PWMpin, IN1pin, IN2pin, MPWM;
   uint8_t motorID;
   double  Input, Output;
   long Position, prevCount; 

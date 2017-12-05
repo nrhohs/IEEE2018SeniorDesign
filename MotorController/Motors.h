@@ -32,9 +32,9 @@ class Motor
 {
  public:
   Motor(void);
-  motorSetup(uint8_t);
-  run(uint8_t);
-  setSpeed(uint8_t);
+  void motorSetup(uint8_t);
+  void run(uint8_t);
+  void setSpeed(uint8_t);
 
   private:
   uint8_t PWMpin, IN1pin, IN2pin;

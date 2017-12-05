@@ -10,7 +10,7 @@ Motor::Motor(void){
   IN2pin=0;
 }
 
-Motor::motorSetup(uint8_t motorID) {
+void Motor::motorSetup(uint8_t motorID) {
   if(motorID == 1){
     PWMpin = M1PWMPIN;
     IN1pin = M1FPIN;
@@ -46,7 +46,7 @@ Motor::motorSetup(uint8_t motorID) {
   pinMode(IN2pin, OUTPUT);
 }
 
-Motor::run(uint8_t cmd){
+void Motor::run(uint8_t cmd){
   if(cmd == FORWARD){
     digitalWrite(IN2pin,LOW);
     digitalWrite(IN1pin,HIGH);
@@ -61,7 +61,7 @@ Motor::run(uint8_t cmd){
   }  
 }
 
-Motor::setSpeed(uint8_t pwm){
+void Motor::setSpeed(uint8_t pwm){
   analogWrite(PWMpin, pwm);
 }
 

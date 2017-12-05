@@ -12,6 +12,8 @@
 double Setpoint, Input, Output;
 int M1PWM = 0;
 
+
+
 Motor MR1;
 Encoder M1Encoder(18,52);
 PID M1PID(&Input,&Output,&Setpoint,Kp,Ki,Kd,DIRECT);
@@ -19,7 +21,7 @@ PID M1PID(&Input,&Output,&Setpoint,Kp,Ki,Kd,DIRECT);
 unsigned long lastMilli = 0;
 volatile long count = 0;
 int RPM = 0;
-int i = 0;
+int i=0;
 
 
 void setup() {
@@ -32,20 +34,24 @@ void setup() {
 }
 
 void loop() {
-
-  if((millis()-lastMilli) >= LOOPTIME) {
-    lastMilli = millis();
-    long newPosition = M1Encoder.read();
-    Input = getRPM(newPosition);
-    M1PID.Compute();
-    Serial.println(i);
-    Serial.print("\t");    
-    Serial.println(Input);
-    Serial.print("\t");
-    M1PWM = constrain(int(M1PWM+Output),0,255);
-    MR1.setSpeed(M1PWM);
+  uint8_t incomingByte[2];
+  if (Serial.available() > 0) { // if any data available
+    incomingByte[i%2] = Serial.read(); // read byte
+    Serial.write(int(incomingByte[i%2])); // send it back  
     i++;
   }
+  
+  
+
+
+  
+  if((millis()-lastMilli) >= LOOPTIME) {
+    lastMilli = millis();
+    Input = getRPM(M1Encoder.read());
+    M1PID.Compute();
+    M1PWM = constrain(int(M1PWM+Output),0,255);
+    MR1.setSpeed(M1PWM);
+  } 
 }
 
 double getRPM(long count) {
