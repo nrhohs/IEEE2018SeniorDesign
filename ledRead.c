@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
         printf("---------------------Start-------------------\n");
         int j;
         for (j = 0;j < ii; j++) {
-            printf("%d\t\t%lu\n",cmdRecord[j]->cmdVal, cmdRecord[j]->cmdUSec);
+            printf("%d\t\t%lu usec\n",cmdRecord[j]->cmdVal, cmdRecord[j]->cmdUSec);
         }
         printf("----------------------End--------------------\n");
     }
