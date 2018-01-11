@@ -48,8 +48,8 @@ Motor::motorSetup(uint8_t motorID) {
 
 Motor::run(uint8_t cmd){
   if(cmd == FORWARD){
-    digitalWrite(IN2pin,LOW);
     digitalWrite(IN1pin,HIGH);
+    digitalWrite(IN2pin,LOW);
   }
   else if(cmd == BACKWARD){
     digitalWrite(IN1pin,LOW);

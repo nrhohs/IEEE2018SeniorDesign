@@ -5,11 +5,35 @@
 #include "vl53l0x_setup.h"
 
 
+#define VERSION_REQUIRED_MAJOR 1
+#define VERSION_REQUIRED_MINOR 0
+#define VERSION_REQUIRED_BUILD 1
+
+
+void print_pal_error(VL53L0X_Error Status){
+    char buf[VL53L0X_MAX_STRING_LENGTH];
+    VL53L0X_GetPalErrorString(Status, buf);
+    printf("API Status: %i : %s\n", Status, buf);
+}
+
+void print_range_status(VL53L0X_RangingMeasurementData_t* pRangingMeasurementData){
+    char buf[VL53L0X_MAX_STRING_LENGTH];
+    uint8_t RangeStatus;
+
+    /*
+     * New Range Status: data is valid when pRangingMeasurementData->RangeStatus = 0
+     */
+
+    RangeStatus = pRangingMeasurementData->RangeStatus;
+
+    VL53L0X_GetRangeStatusString(RangeStatus, buf);
+    printf("Range Status: %i : %s\n", RangeStatus, buf);
+
+}
+
 VL53L0X_Error VL53L0X_setup(VL53L0X_Dev_t *pMyDevice)
 {
     VL53L0X_Error Status = VL53L0X_ERROR_NONE;
-    VL53L0X_RangingMeasurementData_t    RangingMeasurementData;
-    int i;
     uint32_t refSpadCount;
     uint8_t isApertureSpads;
     uint8_t VhvSettings;
@@ -73,8 +97,7 @@ VL53L0X_Error VL53L0X_setup(VL53L0X_Dev_t *pMyDevice)
 	
     if (Status == VL53L0X_ERROR_NONE) {
         Status = VL53L0X_SetMeasurementTimingBudgetMicroSeconds(pMyDevice,
-        		//33000);
-        		200000);
+        		22000);
 	}
 	
     /*if (Status == VL53L0X_ERROR_NONE) {
@@ -85,5 +108,6 @@ VL53L0X_Error VL53L0X_setup(VL53L0X_Dev_t *pMyDevice)
         Status = VL53L0X_SetVcselPulsePeriod(pMyDevice, 
 		        VL53L0X_VCSEL_PERIOD_FINAL_RANGE, 14);
     }*/
+    printf("init complete\n");
     return Status;
 }

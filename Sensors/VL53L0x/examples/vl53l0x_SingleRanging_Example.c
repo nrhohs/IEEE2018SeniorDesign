@@ -208,6 +208,7 @@ int main(int argc, char **argv)
             printf("Device Name : %s\n", DeviceInfo.Name);
             printf("Device Type : %s\n", DeviceInfo.Type);
             printf("Device ID : %s\n", DeviceInfo.ProductId);
+
             printf("ProductRevisionMajor : %d\n", DeviceInfo.ProductRevisionMajor);
             printf("ProductRevisionMinor : %d\n", DeviceInfo.ProductRevisionMinor);
 

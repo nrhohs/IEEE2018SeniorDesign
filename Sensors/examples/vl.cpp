@@ -17,10 +17,7 @@ int main(){
   Adafruit_VL6180X vl1 = Adafruit_VL6180X();  
   Adafruit_VL6180X vl2 = Adafruit_VL6180X();  
   
-  VL53L0X_Error VL53L0XStatus = VL53L0X_ERROR_NONE;
-  VL53L0X_Dev_t MyDevice;
-  VL53L0X_Dev_t *pMyDevice = &MyDevice;
-  VL53L0X_RangingMeasurementData_t RangingMeasurementData;
+
 
 
   char buf[15];
@@ -29,6 +26,8 @@ int main(){
   if(ioctl(mux,I2C_SLAVE,0x70)<0)
     printf("error\n");
   char data_write[1];
+
+
   data_write[0] = 1<<2;
   write(mux, data_write, 1);
   vl1.begin();
@@ -38,12 +37,24 @@ int main(){
   if (vl2.begin()>0) 
     printf("No Sensor Found\n");
 
-    data_write[0] = 1<<0;
-    write(mux, data_write, 1);
-    pMyDevice->I2cDevAddr = 0x29; 
-    pMyDevice->fd = VL53L0X_i2c_init(buf,pMyDevice->I2cDevAddr);
-    VL53L0XStatus = VL53L0X_setup(pMyDevice);
+  data_write[0] = 1<<0;
+  write(mux, data_write, 1);
 
+  VL53L0X_Error VL53L0XStatus = VL53L0X_ERROR_NONE;
+  VL53L0X_Dev_t MyDevice;
+  VL53L0X_Dev_t *pMyDevice = &MyDevice;
+  VL53L0X_RangingMeasurementData_t RangingMeasurementData;
+    pMyDevice->I2cDevAddr = 0x29; 
+    pMyDevice->fd = VL53L0X_i2c_init("/dev/i2c-1",pMyDevice->I2cDevAddr);
+    VL53L0XStatus = VL53L0X_setup(pMyDevice);
+ if (MyDevice.fd<0) {
+        VL53L0XStatus = VL53L0X_ERROR_CONTROL_INTERFACE;
+        printf ("Failed to init\n");
+    }  
+ if (VL53L0XStatus == VL53L0X_ERROR_NONE) {
+	printf("Call of VL53L0X_DataInit\n");
+	VL53L0XStatus = VL53L0X_DataInit(pMyDevice);
+    }
 
 while(1) {
   data_write[0] = 1<<2;
@@ -75,17 +86,26 @@ while(1) {
 
   data_write[0] = 1<<0;
   write(mux, data_write, 1);
-  VL53L0XStatus = VL53L0X_GetRangingMeasurementData(pMyDevice,&RangingMeasurementData);
-//  VL53L0XStatus = VL53L0X_PerformSingleRangingMeasurement(pMyDevice,&RangingMeasurementData);
 
-//  if (RangingMeasurementData.RangeStatus == 0) {
-    printf("TOF3 Range: "); printf("%4d   \r",RangingMeasurementData.RangeMilliMeter);
-//  }
-//  else {
-//    printf("TOF3 Range: "); printf("XXXX   \r");
-//  }
-  
-  VL53L0X_ClearInterruptMask(pMyDevice,VL53L0X_REG_SYSTEM_INTERRUPT_GPIO_NEW_SAMPLE_READY);
+
+
+    if(VL53L0XStatus == VL53L0X_ERROR_NONE)
+    {
+
+//            printf ("\nCall of VL53L0X_PerformSingleRangingMeasurement\n");
+            VL53L0XStatus = VL53L0X_PerformSingleRangingMeasurement(pMyDevice,
+            		&RangingMeasurementData);
+
+//            print_pal_error(VL53L0XStatus);
+//            print_range_status(&RangingMeasurementData);
+
+           
+            if (VL53L0XStatus != VL53L0X_ERROR_NONE) break;
+            if (RangingMeasurementData.RangeStatus == 0)
+              printf("Measured distance: %4i\r", RangingMeasurementData.RangeMilliMeter);
+    }
+
+//    print_pal_error(VL53L0XStatus);
 
   fflush(stdout);
   usleep(50000);
