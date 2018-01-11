@@ -140,9 +140,9 @@ Adafruit_VL6180x.o : Libraries/Adafruit_VL6180x.cpp
 
 rs232.o : rs232.c
 
-$(OBJECTS_DIR)RTIMULibDrive.o : RTIMULibDriveCombo.cpp $(DEPS)
+$(OBJECTS_DIR)RTIMULibDrive.o : Robot.cpp $(DEPS)
 	@$(CHK_DIR_EXISTS) objects/ || $(MKDIR) objects/ 
-	$(CXX) -c -o $@ RTIMULibDriveCombo.cpp $(CFLAGS) $(INCPATH) -lm -lwiringPi 
+	$(CXX) -c -o $@ Robot.cpp $(CFLAGS) $(INCPATH) -lm -lwiringPi 
 
 # Install
 
