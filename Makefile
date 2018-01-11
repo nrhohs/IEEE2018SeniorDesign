@@ -83,7 +83,7 @@ DEPS  = $(RTIMULIBPATH)/RTMath.h \
     $(RTIMULIBPATH)/IMUDrivers/RTPressureMS5637.h 
  
 
-OBJECTS = objects/RTIMULibDrive.o \
+OBJECTS = objects/Robot.o \
     objects/RTMath.o \
     objects/RTIMUHal.o \
     objects/RTFusion.o \
@@ -108,11 +108,11 @@ OBJECTS = objects/RTIMULibDrive.o \
     objects/RTPressureLPS25H.o \
     objects/RTPressureMS5611.o \
     objects/RTPressureMS5637.o \
-    objects/Adafruit_VL6180x.o \
-    objects/rs232.o  
+    Adafruit_VL6180x.o \
+    rs232.o  
      
 
-MAKE_TARGET	= RTIMULibDrive
+MAKE_TARGET	= Robot
 DESTDIR		= Output/
 TARGET		= Output/$(MAKE_TARGET)
 
@@ -120,7 +120,7 @@ TARGET		= Output/$(MAKE_TARGET)
 
 $(TARGET): $(OBJECTS)
 	@$(CHK_DIR_EXISTS) Output/ || $(MKDIR) Output/
-	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(LIBS) ./wiringPi/devLib/lcd.o -lwiringPi
+	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(LIBS) ./Libraries/wiringPi/devLib/lcd.o -lwiringPi
 
 clean:
 	-$(DEL_FILE) $(OBJECTS)
@@ -136,11 +136,11 @@ $(OBJECTS_DIR)%.o : $(RTIMULIBPATH)/IMUDrivers/%.cpp $(DEPS)
 	@$(CHK_DIR_EXISTS) objects/ || $(MKDIR) objects/
 	$(CXX) -c -o $@ $< $(CFLAGS) $(INCPATH)
 
-Adafruit_VL6180x.o : Libraries/Adafruit_VL6180x.cpp 
+Adafruit_VL6180x.o : Adafruit_VL6180x.cpp 
 
 rs232.o : rs232.c
 
-$(OBJECTS_DIR)RTIMULibDrive.o : Robot.cpp $(DEPS)
+$(OBJECTS_DIR)Robot.o : Robot.cpp $(DEPS)
 	@$(CHK_DIR_EXISTS) objects/ || $(MKDIR) objects/ 
 	$(CXX) -c -o $@ Robot.cpp $(CFLAGS) $(INCPATH) -lm -lwiringPi 
 

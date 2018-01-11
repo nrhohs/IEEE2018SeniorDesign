@@ -26,15 +26,15 @@
 #include "RTMath.h"
 #include <stdbool.h>
 #include <stdio.h>
-#include "Libraries/Adafruit_VL6180x.h"
+#include "Adafruit_VL6180x.h"
 #include <stdlib.h>
 #include <stdint.h>
 #include <unistd.h>
-#include "Libraries/rs232.h"
-//#include <wiringPi.h>
-//#include <mcp23017.h>
-//#include <lcd.h>
-//#include <softPwm.h>
+#include "rs232.h"
+#include <wiringPi.h>
+#include <mcp23017.h>
+#include <lcd.h>
+#include <softPwm.h>
 
 #define BUF_SIZE 8
 
