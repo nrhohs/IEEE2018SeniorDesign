@@ -108,8 +108,8 @@ OBJECTS = objects/Robot.o \
     objects/RTPressureLPS25H.o \
     objects/RTPressureMS5611.o \
     objects/RTPressureMS5637.o \
-    Adafruit_VL6180x.o \
-    rs232.o  
+    objects/Adafruit_VL6180x.o \
+    objects/rs232.o  
      
 
 MAKE_TARGET	= Robot
@@ -136,9 +136,13 @@ $(OBJECTS_DIR)%.o : $(RTIMULIBPATH)/IMUDrivers/%.cpp $(DEPS)
 	@$(CHK_DIR_EXISTS) objects/ || $(MKDIR) objects/
 	$(CXX) -c -o $@ $< $(CFLAGS) $(INCPATH)
 
-Adafruit_VL6180x.o : Adafruit_VL6180x.cpp 
+objects/Adafruit_VL6180x.o : Libraries/Adafruit_VL6180x.cpp 
+	@$(CHK_DIR_EXISTS) objects/ || $(MKDIR) objects/
+	$(CXX) -c -o $@ $< $(CFLAGS) $(INCPATH)
 
-rs232.o : rs232.c
+objects/rs232.o : Libraries/rs232.c
+	@$(CHK_DIR_EXISTS) objects/ || $(MKDIR) objects/
+	$(CC) -c -o $@ $< $(CFLAGS) $(INCPATH)
 
 $(OBJECTS_DIR)Robot.o : Robot.cpp $(DEPS)
 	@$(CHK_DIR_EXISTS) objects/ || $(MKDIR) objects/ 

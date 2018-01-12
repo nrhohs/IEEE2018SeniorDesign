@@ -1,7 +1,11 @@
+
 #ifndef Motors_h
 #define Motors_h
 
 #include "Arduino.h"
+#include <PID_v1.h>
+#include <Encoder.h>
+
 
 //Define Motor Pin Numbers
 #define M1PWMPIN   8
@@ -23,22 +27,46 @@
 #define M6FPIN     32
 #define M6RPIN     33
 
-#define FORWARD 1
-#define BACKWARD 2
-#define STOP 3
+#define M1EnA      18
+#define M1EnB      50
+#define M2EnA      19
+#define M2EnB      51
+#define M3EnA      20
+#define M3EnB      52
+#define M4EnA      21
+#define M4EnB      53
+#define M5EnA      18
+#define M5EnB      48
+#define M6EnA      18
+#define M6EnB      49
 
+#define FORWARD    1
+#define BACKWARD   2
+#define STOP       3
+
+#define LOOPTIME    150
+
+#define Kp          0.10
+#define Ki          0.05
+#define Kd          0.01
 
 class Motor
 {
  public:
-  Motor(void);
-  void motorSetup(uint8_t);
+  Motor(uint8_t MotorID,uint8_t pin1,uint8_t pin2);
   void run(uint8_t);
   void setSpeed(uint8_t);
+  Encoder MEncoder;
+  PID MPID;
+  void updatePID();
+  double  Setpoint;
+  uint8_t PWMpin, IN1pin, IN2pin, MPWM;
 
   private:
-  uint8_t PWMpin, IN1pin, IN2pin;
   uint8_t motorID;
+  double  Input, Output;
+  long Position, prevCount; 
+  double getRPM(long);  
 };
 
 #endif

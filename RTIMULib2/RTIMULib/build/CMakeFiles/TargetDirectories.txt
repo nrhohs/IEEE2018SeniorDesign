@@ -1,8 +1,0 @@
-/home/pi/RTIMULib2/RTIMULib/build/CMakeFiles/install/local.dir
-/home/pi/RTIMULib2/RTIMULib/build/CMakeFiles/list_install_components.dir
-/home/pi/RTIMULib2/RTIMULib/build/CMakeFiles/install.dir
-/home/pi/RTIMULib2/RTIMULib/build/CMakeFiles/RTIMULib.dir
-/home/pi/RTIMULib2/RTIMULib/build/CMakeFiles/test.dir
-/home/pi/RTIMULib2/RTIMULib/build/CMakeFiles/install/strip.dir
-/home/pi/RTIMULib2/RTIMULib/build/CMakeFiles/edit_cache.dir
-/home/pi/RTIMULib2/RTIMULib/build/CMakeFiles/rebuild_cache.dir

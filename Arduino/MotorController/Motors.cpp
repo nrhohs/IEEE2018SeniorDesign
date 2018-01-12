@@ -3,14 +3,16 @@
 
 
 
-
-Motor::Motor(void){
+Motor::Motor(uint8_t motorID, uint8_t pin1, uint8_t pin2)
+    :MPID(&Input,&Output,&Setpoint,Kp,Ki,Kd,DIRECT), MEncoder(pin1,pin2)
+{
   PWMpin=0;
   IN1pin=0;
   IN2pin=0;
-}
-
-void Motor::motorSetup(uint8_t motorID) {
+  prevCount=0;
+  Setpoint=0; 
+  MPID.SetMode(AUTOMATIC);
+  MPID.SetOutputLimits(-255,255);
   if(motorID == 1){
     PWMpin = M1PWMPIN;
     IN1pin = M1FPIN;
@@ -41,10 +43,16 @@ void Motor::motorSetup(uint8_t motorID) {
     IN1pin = M6FPIN;
     IN2pin = M6RPIN;
   }
+  else {
+    PWMpin = 0;
+    IN1pin = 0;
+    IN2pin = 0;
+  }
   pinMode(PWMpin, OUTPUT);
   pinMode(IN1pin, OUTPUT);
   pinMode(IN2pin, OUTPUT);
 }
+
 
 void Motor::run(uint8_t cmd){
   if(cmd == FORWARD){
@@ -56,7 +64,7 @@ void Motor::run(uint8_t cmd){
     digitalWrite(IN2pin,HIGH);
   }  
   else if(cmd == STOP){
-    digitalWrite(IN2pin,LOW);
+    digitalWrite(IN1pin,LOW);
     digitalWrite(IN2pin,LOW);
   }  
 }
@@ -64,4 +72,21 @@ void Motor::run(uint8_t cmd){
 void Motor::setSpeed(uint8_t pwm){
   analogWrite(PWMpin, pwm);
 }
+
+
+void Motor::updatePID() {
+  Position = MEncoder.read();
+  Input = getRPM(Position);
+  MPID.Compute();
+  MPWM = constrain(int(MPWM+Output),0,255);
+  setSpeed(MPWM);
+}
+
+
+double Motor::getRPM(long count) {
+  double speed_act = ((count - prevCount)*(60*(1000/LOOPTIME)))/(1920.0);
+  prevCount = count;
+  return speed_act;
+}
+
 

@@ -26,11 +26,11 @@
 #include "RTMath.h"
 #include <stdbool.h>
 #include <stdio.h>
-#include "Adafruit_VL6180x.h"
+#include "Libraries/Adafruit_VL6180x.h"
 #include <stdlib.h>
 #include <stdint.h>
 #include <unistd.h>
-#include "rs232.h"
+#include "Libraries/rs232.h"
 #include <wiringPi.h>
 #include <mcp23017.h>
 #include <lcd.h>
