@@ -80,8 +80,13 @@ DEPS  = $(RTIMULIBPATH)/RTMath.h \
     $(RTIMULIBPATH)/IMUDrivers/RTPressureBMP180.h \
     $(RTIMULIBPATH)/IMUDrivers/RTPressureLPS25H.h \
     $(RTIMULIBPATH)/IMUDrivers/RTPressureMS5611.h \
-    $(RTIMULIBPATH)/IMUDrivers/RTPressureMS5637.h 
- 
+    $(RTIMULIBPATH)/IMUDrivers/RTPressureMS5637.h \
+    $(RTIMULIBPATH)/pigpio.h \
+    $(RTIMULIBPATH)/Adafruit_VL6180x.h \
+    $(RTIMULIBPATH)/VL53L0X.h \
+    $(RTIMULIBPATH)/ledRead.h \
+    $(RTIMULIBPATH)/SensorLib2.h
+
 
 OBJECTS = objects/Robot.o \
     objects/RTMath.o \
@@ -108,8 +113,11 @@ OBJECTS = objects/Robot.o \
     objects/RTPressureLPS25H.o \
     objects/RTPressureMS5611.o \
     objects/RTPressureMS5637.o \
-    objects/Adafruit_VL6180x.o \
-    objects/rs232.o  
+    objects/Adafruit_VL6180X.o \
+    objects/ledRead.o \
+    objects/VL53L0X.o \
+    objects/rs232.o \
+    objects/SensorLib2.o
      
 
 MAKE_TARGET	= Robot
@@ -120,7 +128,7 @@ TARGET		= Output/$(MAKE_TARGET)
 
 $(TARGET): $(OBJECTS)
 	@$(CHK_DIR_EXISTS) Output/ || $(MKDIR) Output/
-	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(LIBS) ./Libraries/wiringPi/devLib/lcd.o -lwiringPi
+	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(LIBS) ./Libraries/wiringPi/devLib/lcd.o -lwiringPi -pthread -lrt -lpigpio
 
 clean:
 	-$(DEL_FILE) $(OBJECTS)
@@ -136,7 +144,7 @@ $(OBJECTS_DIR)%.o : $(RTIMULIBPATH)/IMUDrivers/%.cpp $(DEPS)
 	@$(CHK_DIR_EXISTS) objects/ || $(MKDIR) objects/
 	$(CXX) -c -o $@ $< $(CFLAGS) $(INCPATH)
 
-objects/Adafruit_VL6180x.o : Libraries/Adafruit_VL6180x.cpp 
+objects/Adafruit_VL6180X.o : Libraries/Adafruit_VL6180x.cpp 
 	@$(CHK_DIR_EXISTS) objects/ || $(MKDIR) objects/
 	$(CXX) -c -o $@ $< $(CFLAGS) $(INCPATH)
 
@@ -144,9 +152,21 @@ objects/rs232.o : Libraries/rs232.c
 	@$(CHK_DIR_EXISTS) objects/ || $(MKDIR) objects/
 	$(CC) -c -o $@ $< $(CFLAGS) $(INCPATH)
 
-$(OBJECTS_DIR)Robot.o : Robot.cpp $(DEPS)
+objects/ledRead.o : Libraries/ledRead.c $(DEPS) 
+	@$(CHK_DIR_EXISTS) objects/ || $(MKDIR) objects/
+	$(CC) -c -o $@ $< $(CFLAGS) $(INCPATH)
+
+objects/VL53L0X.o : Libraries/src/VL53L0X.cpp
+	@$(CHK_DIR_EXISTS) objects/ || $(MKDIR) objects/
+	$(CXX) -c -o $@ $< $(CFLAGS)-std=c++11  $(INCPATH)
+
+objects/SensorLib2.o : Libraries/src/SensorLib2.cpp $(DEPS)
+	@$(CHK_DIR_EXISTS) objects/ || $(MKDIR) objects/
+	$(CXX) -c -o $@ $< $(CFLAGS)-std=c++11  $(INCPATH)
+
+$(OBJECTS_DIR)Robot.o : Robot.cpp $(DEPS) objects/VL53L0X.o
 	@$(CHK_DIR_EXISTS) objects/ || $(MKDIR) objects/ 
-	$(CXX) -c -o $@ Robot.cpp $(CFLAGS) $(INCPATH) -lm -lwiringPi 
+	$(CXX) -c -o $@ Robot.cpp $(CFLAGS) $(INCPATH) -lm -lwiringPi
 
 # Install
 
