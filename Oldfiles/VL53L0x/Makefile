@@ -19,15 +19,14 @@ VPATH = \
 	./../VL53L0X_API/Api/core/src \
 	./platform/src/ \
 	./../TOF
-
+ 
 LIB_SRCS = \
 	vl53l0x_api_calibration.c \
 	vl53l0x_api_core.c \
 	vl53l0x_api_ranging.c \
 	vl53l0x_api_strings.c \
 	vl53l0x_api.c \
-	vl53l0x_platform.c \
-	Adafruit_VL6180X.cpp
+	vl53l0x_platform.c 
 
 LIB_OBJS  = $(LIB_SRCS:%.c=$(OBJ_DIR)/%.o)
 
