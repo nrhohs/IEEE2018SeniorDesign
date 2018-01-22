@@ -46,6 +46,7 @@ void waitOnImu(RTIMU *,double,Adafruit_VL6180X *);
 
 int main()
 {
+    //Checks for connection to TOF sensor
     Adafruit_VL6180X vl = Adafruit_VL6180X();
     int fd = vl.begin();
        printf("Adafruit VL6180x test!\n");
@@ -55,12 +56,12 @@ int main()
        }
        printf("Sensor found!\n");
 
-
+    //Initializes IMU
     RTIMU *imu = imuInit();
 
 
 
-    //Robot test begin
+    //Robot Initialization & Setup
     int display, j;
     wiringPiSetup();
     mcp23017Setup (100, 0x20);
@@ -85,10 +86,12 @@ int main()
     int bdrate=9600;
   char mode[]={'8','N','1',0}; // 8 data bits, no parity, 1 stop bit
 
+  //Initializing motor commands
   unsigned char str_send[BUF_SIZE];
-  str_send[0] = 0;
-  str_send[1] = 30;
+  str_send[0] = 0;							//init direction to STOP
+  str_send[1] = 30;							//init speed to 30 out of 255
   
+  //Checks for serial connection
   if(RS232_OpenComport(cport_nr, bdrate, mode))
   {
     printf("Can not open comport\n");
@@ -97,46 +100,50 @@ int main()
 
   usleep(2000000);  /* waits 2000ms for stable condition */
   
+  /*****************
+  Actual Robot Start
+  *****************/
   while(1)
   {
 
     //Go fwd
     usleep(1000000);  /* sleep for 1 Second */
-    str_send[0]=1;
-    RS232_SendByte(cport_nr,str_send[0]);
-    RS232_SendByte(cport_nr,str_send[1]);
-	printf("Sent to Arduino: '%3d %3d'\n", str_send[0],str_send[1]);
-        lcdPosition(display,0,0);
-        lcdPrintf(display,"Sent: '%3d %3d'", str_send[0],str_send[1]);
-    waitOnTOF(&vl);
+    str_send[0]=1;                                                      //Set direction to FWD
+    RS232_SendByte(cport_nr,str_send[0]);                               //Send direction
+    RS232_SendByte(cport_nr,str_send[1]);				//Send speed
+    printf("Sent to Arduino: '%3d %3d'\n", str_send[0],str_send[1]);    //cmdline output of command
+    lcdPosition(display,0,0);						//Init position of lcd to beginning
+    lcdPrintf(display,"Sent: '%3d %3d'", str_send[0],str_send[1]);	//Output command to lcd
+    waitOnTOF(&vl);							//Call TOF function for wait
     
     //stop
-    str_send[0]=0;
-    RS232_SendByte(cport_nr,str_send[0]);
-    RS232_SendByte(cport_nr,str_send[1]);
-	printf("Sent to Arduino: '%3d %3d'\n", str_send[0],str_send[1]);
-        lcdPosition(display,0,0);
-        lcdPrintf(display,"Sent: '%3d %3d'", str_send[0],str_send[1]);
-    double currYaw=getCurrImu(imu);
+    str_send[0]=0;							//Set direction to STOP
+    RS232_SendByte(cport_nr,str_send[0]);				//Send direction
+    RS232_SendByte(cport_nr,str_send[1]);				//Send speed
+    printf("Sent to Arduino: '%3d %3d'\n", str_send[0],str_send[1]);	//cmdline output of command
+    lcdPosition(display,0,0);						//Reset position of lcd cursor
+    lcdPrintf(display,"Sent: '%3d %3d'", str_send[0],str_send[1]);	//Output command to lcd
+    double currYaw=getCurrImu(imu);					//checks yaw on IMU
     usleep(1000000);  /* sleep for 1 Second */
 
 
     //Turn Right
-    str_send[0]=5;
+    str_send[0]=5;							//Set direction to TURN RIGHT
     RS232_SendByte(cport_nr,str_send[0]);
     RS232_SendByte(cport_nr,str_send[1]);
-	printf("Sent to Arduino: '%3d %3d'\n", str_send[0],str_send[1]);
-        lcdPosition(display,0,0);
-        lcdPrintf(display,"Sent: '%3d %3d'", str_send[0],str_send[1]);
+    printf("Sent to Arduino: '%3d %3d'\n", str_send[0],str_send[1]);
+    lcdPosition(display,0,0);
+    lcdPrintf(display,"Sent: '%3d %3d'", str_send[0],str_send[1]);
     waitOnImu(imu,currYaw,&vl);
+    //waitOnImu calls to wait for an IMU change using previously checked yaw value
     
     //stop
     str_send[0]=0;
     RS232_SendByte(cport_nr,str_send[0]);
     RS232_SendByte(cport_nr,str_send[1]);
-	printf("Sent to Arduino: '%3d %3d'\n", str_send[0],str_send[1]);
-        lcdPosition(display,0,0);
-        lcdPrintf(display,"Sent: '%3d %3d'", str_send[0],str_send[1]);
+    printf("Sent to Arduino: '%3d %3d'\n", str_send[0],str_send[1]);
+    lcdPosition(display,0,0);
+    lcdPrintf(display,"Sent: '%3d %3d'", str_send[0],str_send[1]);
     currYaw=getCurrImu(imu);
     usleep(1000000);  /* sleep for 1 Second */
   }
