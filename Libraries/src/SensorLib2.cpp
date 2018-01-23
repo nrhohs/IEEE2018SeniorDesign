@@ -226,7 +226,7 @@ double getCurrImuRoll(RTIMU *imu) {
 double getCurrImuPitch(RTIMU *imu) {
     RTIMU_DATA imuData = imu->getIMUData();
     RTVector3 vec=imuData.fusionPose;
-    double pitch=vec.x() * RTMATH_RAD_TO_DEGREE;
+    double pitch=vec.y() * RTMATH_RAD_TO_DEGREE;
     printf("current:%f \n",pitch);
     return pitch;
 }
