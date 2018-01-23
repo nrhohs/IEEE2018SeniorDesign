@@ -1,4 +1,4 @@
-//Sensor package libarary WIP
+///Sensor package libarary WIP
 /******************************
 * File: SensorLib.h           *
 * Author: Tommy Gonsewski     *
@@ -14,11 +14,10 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <unistd.h>
-#include "Adafruit_VL6180x.h"
-#include "VL53L0X.h"
 
 /* I2C Expander MUX */
 struct mux {
+    int muxStatus;
     int initVal;
     int activeInput;
 };
@@ -29,14 +28,9 @@ void switchMUX(MUX *,int);
 
 
 /* Adafruit VL6180X */
-struct shortRange {
-    Adafruit_VL6180X vl;
-    MUX *mux;
-    int inputNo;
-    uint8_t range;
-    uint8_t status;
-};
 typedef struct shortRange SRANGE;
+
+SRANGE *initVL6180XwoMUX();
 
 /* Method: initVL6180X
     Description: Initializes and returns short range TOF by providing
@@ -47,14 +41,10 @@ SRANGE *initVL6180X(MUX *,int);
     Description: Input multiplexor value as parameter and
     		receive 8-bit unsigned val range value (mm)
 */
-void getShortRange(SRANGE *);
+uint8_t getShortRangewoMUX(SRANGE *);
+uint8_t getShortRange(SRANGE *);
 
 /* Adafruit VL53L0X */
-struct longRange {
-    VL53L0X vl53l0x;
-    MUX *mux;
-    int inputNo;
-};
 typedef struct longRange LRANGE;
 
 /* Method: initLongRange
@@ -62,13 +52,15 @@ typedef struct longRange LRANGE;
 		w/ timing budget as specified in function call parameter
 		"timingBudgetMicro"
 */
+LRANGE *initLongRangewoMUX();
 LRANGE *initLongRange(MUX *,int);
     
 /* Method: getLongRange
     Description: Input multiplexor value as parameter and
 		receive 16-bit unsigned val range value (mm)
 */
-LRANGE *getLongRange(LRANGE *);
+uint16_t getLongRangewoMUX(LRANGE *);
+uint16_t getLongRange(LRANGE *);
 
 /* IR Reader */
 /*
