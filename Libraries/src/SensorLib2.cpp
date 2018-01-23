@@ -5,8 +5,8 @@
 #include <stdbool.h>
 #include <linux/i2c-dev.h>
 #include <fcntl.h>
-#include "Adafruit_VL6180x.h"
 #include "VL53L0X.h"
+#include "Adafruit_VL6180x.h"
 #include "ledRead.h"
 #include "RTIMULib.h"
 #include "RTMath.h"
@@ -28,10 +28,10 @@ void setMUXInput(MUX *, int);
  *
  */
 MUX *initMUX() {
-    MUX *newMUX = malloc(sizeof(MUX));
+    MUX *newMUX = (MUX *)malloc(sizeof(MUX));
     char buf[15];
-    int muxStatus = open(buf,0_RDWR);
-    if (ioctl(muxStatus,I2C_SLAVE,0x70)<0) {
+    int mux = open(buf,O_RDWR);
+    if (ioctl(mux,I2C_SLAVE,0x70)<0) {
 	printf("MUX initialization failed\n");
 	setMUXStatus(newMUX,-1);
 	return newMUX;
@@ -51,7 +51,7 @@ void switchMUX(MUX *mux, int inputNo) {
     if(!getMUXStatus(mux)) {
         char data_write[1];
         data_write[0] = 1<<inputNo;
-        write(mux, data_write, 1);
+        write(mux->initVal, data_write, 1);
 	setMUXInput(mux,1);
     }
     else {
@@ -60,18 +60,42 @@ void switchMUX(MUX *mux, int inputNo) {
 }
 
 /* VL6180X */
+struct shortRange {
+    Adafruit_VL6180X vl;
+    MUX *mux;
+    int inputNo;
+    uint8_t range;
+    uint8_t status;
+};
+
+SRANGE *initVL6180XwoMUX() {
+    SRANGE *newSRANGE =(SRANGE *) malloc(sizeof(SRANGE));
+    newSRANGE->vl = Adafruit_VL6180X();
+    newSRANGE->mux=NULL;
+    newSRANGE->inputNo=0;
+    return newSRANGE;
+}
 /*
  *
  * Initializer for the short range VL6180X TOF
  * 
  * This function initializes the TOF and returns
  * the SRANGE object
- *//Assumes the TOF is connected by MUX
+ *
+ *Assumes the TOF is connected by MUX
  */
 SRANGE *initVL6180X(MUX *mux,int inputNo) {
-    SRANGE *newSRANGE = malloc(sizeof(SRANGE));
+    SRANGE *newSRANGE =(SRANGE *) malloc(sizeof(SRANGE));
     newSRANGE->vl = Adafruit_VL6180X();
+    newSRANGE->mux=mux;
+    newSRANGE->inputNo=inputNo;
     return newSRANGE;
+}
+
+uint8_t getShortRangewoMUX(SRANGE *srange) {
+    srange->range=srange->vl.Adafruit_VL6180X::readRange();
+    srange->status=srange->vl.readRangeStatus();
+    return srange->range;
 }
 
 /*
@@ -87,7 +111,7 @@ uint8_t getShortRange(SRANGE *srange) {
 	if (getMUXInput(srange->mux)!=srange->inputNo)
 	    switchMUX(srange->mux,srange->inputNo);
 	srange->range=srange->vl.readRange();
-	srange->status=srange->vl.readStatus();
+	srange->status=srange->vl.readRangeStatus();
     }
     else {
 	srange->range=-1;
@@ -98,18 +122,39 @@ uint8_t getShortRange(SRANGE *srange) {
 
 
 /* VL53L0X */
+struct longRange {
+    VL53L0X vl53l0x;
+    MUX *mux;
+    int inputNo;
+};
+LRANGE *initLongrangewoMUX() {
+    LRANGE *lrange=(LRANGE *)malloc(sizeof(LRANGE));
+    VL53L0X vl;
+    vl.init();
+    vl.setTimeout(200);
+    lrange->vl53l0x=vl;
+    return lrange;
+}
 /*
  * Initializes the VL53L0X TOF
  *
  * Function returns a LRANGE object
  */
 LRANGE *initLongrange(MUX *mux, int inputNo) {
-    LRANGE *lrange=malloc(sizeof(LRANGE));
+    LRANGE *lrange=(LRANGE *)malloc(sizeof(LRANGE));
     VL53L0X vl;
     vl.init();
     vl.setTimeout(200);
     lrange->vl53l0x=vl;
+    lrange->mux=mux;
+    lrange->inputNo=inputNo;
     return lrange;
+}
+uint16_t getLongRangewoMUX(LRANGE *lrange) {
+    uint16_t distance = lrange->vl53l0x.readRangeSingleMillimeters();
+    if (lrange->vl53l0x.timeoutOccurred())
+	printf("Timeout occurred. Invalid measurement.\n");
+    return distance;
 }
 
 /*
@@ -119,14 +164,14 @@ LRANGE *initLongrange(MUX *mux, int inputNo) {
  * LRANGE object
  */
 uint16_t getLongRange(LRANGE *lrange) {
-    if (!getMUXStatus(mux)) {
+    if (!getMUXStatus(lrange->mux)) {
 	//switch MUX input if needed
-	if (getMUXInput(mux)!=inputNo)
-	    switchMUX(mux,inputNo);
+	if (getMUXInput(lrange->mux)!=lrange->inputNo)
+	    switchMUX(lrange->mux,lrange->inputNo);
     }
     uint16_t distance = lrange->vl53l0x.readRangeSingleMillimeters();
-    if (lrange.timeoutOccurred())
-	stdout<<"Timeout occurred. Invalid measurement.\n";
+    if (lrange->vl53l0x.timeoutOccurred())
+	printf("Timeout occurred. Invalid measurement.\n");
     return distance;
 }
 
@@ -172,7 +217,7 @@ RTIMU *imuInit() {
 
 double getCurrImuRoll(RTIMU *imu) {
     RTIMU_DATA imuData = imu->getIMUData();
-    RTVector3 vect=imuData.fusionPose;
+    RTVector3 vec=imuData.fusionPose;
     double roll=vec.x() * RTMATH_RAD_TO_DEGREE;
     printf("current:%f \n",roll);
     return roll;
@@ -180,7 +225,7 @@ double getCurrImuRoll(RTIMU *imu) {
 
 double getCurrImuPitch(RTIMU *imu) {
     RTIMU_DATA imuData = imu->getIMUData();
-    RTVector3 vect=imuData.fusionPose;
+    RTVector3 vec=imuData.fusionPose;
     double pitch=vec.x() * RTMATH_RAD_TO_DEGREE;
     printf("current:%f \n",pitch);
     return pitch;
