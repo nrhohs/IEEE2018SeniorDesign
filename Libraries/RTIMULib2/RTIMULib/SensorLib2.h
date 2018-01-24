@@ -1,4 +1,4 @@
-//Sensor package libarary WIP
+///Sensor package libarary WIP
 /******************************
 * File: SensorLib.h           *
 * Author: Tommy Gonsewski     *
@@ -14,7 +14,10 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <unistd.h>
+<<<<<<< HEAD
 #include "VL53L0X.h"
+=======
+>>>>>>> 9f46d9f027dc78e2446b8537ce7fffbd3ab3c038
 
 /* I2C Expander MUX */
 struct mux {
@@ -29,6 +32,7 @@ void switchMUX(MUX *,int);
 
 
 /* Adafruit VL6180X */
+<<<<<<< HEAD
 struct shortRange {
     Adafruit_VL6180X vl;
     MUX *mux;
@@ -37,6 +41,8 @@ struct shortRange {
     uint8_t status;
 };
 
+=======
+>>>>>>> 9f46d9f027dc78e2446b8537ce7fffbd3ab3c038
 typedef struct shortRange SRANGE;
 
 SRANGE *initVL6180XwoMUX();
@@ -54,11 +60,15 @@ uint8_t getShortRangewoMUX(SRANGE *);
 uint8_t getShortRange(SRANGE *);
 
 /* Adafruit VL53L0X */
+<<<<<<< HEAD
 struct longRange {
     VL53L0X vl53l0x;
     MUX *mux;
     int inputNo;
 };
+=======
+typedef struct longRange LRANGE;
+>>>>>>> 9f46d9f027dc78e2446b8537ce7fffbd3ab3c038
 
 typedef struct longRange LRANGE;
 /* Method: initLongRange
