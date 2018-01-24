@@ -1,16 +1,8 @@
-<<<<<<< HEAD
 //Sensor package libarary WIP
 /******************************
 * File: SensorLib.h           *
 * Author: Tommy Gonsewski     *
 * Last Updated: 1/31/18	      *
-=======
-///Sensor package libarary WIP
-/******************************
-* File: SensorLib.h           *
-* Author: Tommy Gonsewski     *
-* Last Updated: 1/17/18	      *
->>>>>>> 5653fec08a703b508ad42bce87ba7bbf2ee2a4c8
 *******************************
 */
 
@@ -22,13 +14,10 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <unistd.h>
-<<<<<<< HEAD
 #include "inc/vl53l0x_api.h"
 #include "inc/vl53l0x_platform.h"
 #include "RTIMULib.h"
 #include "Adafruit_VL6180X.h"
-=======
->>>>>>> 5653fec08a703b508ad42bce87ba7bbf2ee2a4c8
 
 /* I2C Expander MUX */
 struct mux {
@@ -43,7 +32,6 @@ void switchMUX(MUX *,int);
 
 
 /* Adafruit VL6180X */
-<<<<<<< HEAD
 struct shortRange {
     Adafruit_VL6180X vl;
     MUX *mux;
@@ -52,8 +40,6 @@ struct shortRange {
     uint8_t status;
 };
 
-=======
->>>>>>> 5653fec08a703b508ad42bce87ba7bbf2ee2a4c8
 typedef struct shortRange SRANGE;
 
 SRANGE *initVL6180XwoMUX();
@@ -67,7 +53,6 @@ SRANGE *initVL6180X(MUX *,int);
     Description: Input multiplexor value as parameter and
     		receive 8-bit unsigned val range value (mm)
 */
-<<<<<<< HEAD
 uint8_t getShortRange(SRANGE *);
 
 /* Adafruit VL53L0X */
@@ -89,30 +74,17 @@ VL53L0X_Error calibrateSingleMeasure(LRANGE *lrange);
 VL53L0X_Error dataInitializeLR(LRANGE *lrange);
 
 
-=======
-uint8_t getShortRangewoMUX(SRANGE *);
-uint8_t getShortRange(SRANGE *);
-
-/* Adafruit VL53L0X */
-typedef struct longRange LRANGE;
-
->>>>>>> 5653fec08a703b508ad42bce87ba7bbf2ee2a4c8
 /* Method: initLongRange
     Description: Initializes VL53L0X at mux inputNo to long range mode
 		w/ timing budget as specified in function call parameter
 		"timingBudgetMicro"
 */
-<<<<<<< HEAD
-=======
-LRANGE *initLongRangewoMUX();
->>>>>>> 5653fec08a703b508ad42bce87ba7bbf2ee2a4c8
 LRANGE *initLongRange(MUX *,int);
     
 /* Method: getLongRange
     Description: Input multiplexor value as parameter and
 		receive 16-bit unsigned val range value (mm)
 */
-<<<<<<< HEAD
 uint16_t getLongRange(LRANGE *);
 
 /*TOF*/
@@ -128,19 +100,6 @@ typedef struct tof TOF;
 TOF *newTOF(int ,MUX *,int);
 int isLRANGE(TOF *);
 int getDistance(TOF *tof);
-=======
-uint16_t getLongRangewoMUX(LRANGE *);
-uint16_t getLongRange(LRANGE *);
-
-/* IR Reader */
-/*
- * Sets up/starts/reads from IR receiver
- *
- * This function returns the int value of the route for
- * later display on the LCD screen
- */
-int readIRCode();
->>>>>>> 5653fec08a703b508ad42bce87ba7bbf2ee2a4c8
 
 /* IMU */
 /*
@@ -168,7 +127,6 @@ double getCurrImuYaw(RTIMU *imu);
  * Retriever pitch from IMU as double
  * 
  */
-<<<<<<< HEAD
 
 struct Command
 {
@@ -182,9 +140,5 @@ cmd *addCmd(int initVal, unsigned long initUSec);
 int binaryToDecimal(const char *);
 char *decodeSignal(cmd **cmdArr,int maxToggles);
 int routeread();
-=======
-void waitOnImuYaw(RTIMU *imu, double start, Adafruit_VL6180X *vl);
-
->>>>>>> 5653fec08a703b508ad42bce87ba7bbf2ee2a4c8
 
 #endif
