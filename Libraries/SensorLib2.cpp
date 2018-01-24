@@ -195,7 +195,7 @@ VL53L0X_Error dataInitializeLR(LRANGE *lrange) {
     return lrange->Status;
 }
      
-LRANGE *initLongrange(MUX *mux, int inputNo) {
+LRANGE *initLongRange(MUX *mux, int inputNo) {
     LRANGE *lrange=(LRANGE *) malloc(sizeof(LRANGE));
     lrange->pMyDevice = &lrange->MyDevice;
     lrange->Status = VL53L0X_ERROR_NONE;
