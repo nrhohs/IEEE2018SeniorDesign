@@ -6,16 +6,20 @@ The purpose of this library is to make it easier to tweak
 how the robot traverses the arena.
 ********************************************************/
 
+<<<<<<< HEAD
 #include "SensorLib2.h"
 
 #define CPORT_NR 24
 
 void waitOnTOF(TOF *,int target=100);
 void waitOnIMU(RTIMU *,char,double);
+=======
+>>>>>>> 5653fec08a703b508ad42bce87ba7bbf2ee2a4c8
 void stop(int runtime, int display);
 int stop_readTOF(TOF *sensor, int display);
 
 void fwd_timed(unsigned char speed, int runtime, int display);
+<<<<<<< HEAD
 void fwd_waitOnTOF(unsigned char speed, TOF *sensor, int display, int distance=100);
 void fwd_waidOnIMU(unsigned char speed, RTIMU *imu, char axis, double target, int display);
 
@@ -25,6 +29,17 @@ void bwd_waitOnIMU(unsigned char speed, RTIMU *imu, char axis, double target, in
 
 void strafeRight_timed(unsigned char speed, int runtime, int display);
 void strafeRight_waitOnTOF(unsigned char speed, TOF *sensor, int display, int distance = 100);
+=======
+void fwd_waitOnTOF(unsigned char speed, TOF *sensor, int display, int distance = 110);
+void fwd_waidOnIMU(unsigned char speed, RTIMU *imu, char axis, double target, int display);
+
+void bwd_timed(unsigned char speed, int runtime, int display);
+void bwd_waitOnTOF(unsigned char speed, TOF *sensor, int display, int distance = 110);
+void bwd_waitOnIMU(unsigned char speed, RTIMU *imu, char axis, double target, int display);
+
+void strafeRight_timed(unsigned char speed, int runtime, int display);
+void strafeRight_waitOnTOF(unsigned char speed, TOF *sensor, int display, int distance = 110);
+>>>>>>> 5653fec08a703b508ad42bce87ba7bbf2ee2a4c8
 void strafeRight_waitOnIMU(unsigned char speed, RTIMU *imu, char axis, double target, int display);
 
 void strafeLeft_timed(unsigned char speed, int runtime, int display);
