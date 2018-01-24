@@ -1,0 +1,82 @@
+CC = gcc
+CXX = g++
+CFLAGS = -pipe -02 -Wall -W
+CXXFLAGS = -pipe -02 -Wall -W
+INCPATH = -I. -ILibraries/RTIMULib2/RTIMULib
+LINK = g++
+LFLAGS = -Wl, -01
+LIBS = -L/usr/lib/arm-linux-gnueabihf
+
+# Output directory
+
+OBJECTS_DIR = objects/
+
+# Files
+
+DEPS = Libraries/RTIMULib2/RTIMULib/RTMath.h \
+	Libraries/RTIMULib2/RTIMULib/RTIMULib.h \
+	Libraries/RTIMULib2/RTIMULib/RTIMULibDefs.h \
+	Libraries/RTIMULib2/RTIMULib/RTIMUHal.h \
+	Libraries/RTIMULib2/RTIMULib/RTFusion.h \
+	Libraries/RTIMULib2/RTIMULib/RTFusionKalman4.h \
+	Libraries/RTIMULib2/RTIMULib/RTFusionRTQF.h \
+	Libraries/RTIMULib2/RTIMULib/RTIMUSettings.h \
+	Libraries/RTIMULib2/RTIMULib/RTIMUAccelCal.h \
+	Libraries/RTIMULib2/RTIMULib/RTIMUMagCal.h \
+	Libraries/RTIMULib2/RTIMULib/RTIMUCalDefs.h \
+	Libraries/RTIMULib2/RTIMULib/RTIMU/IMUDrivers/RTIMU.h \
+	Libraries/RTIMULib2/RTIMULib/RTIMU/IMUDrivers/RTIMUNull.h \
+	Libraries/RTIMULib2/RTIMULib/RTIMU/IMUDrivers/RTIMUBN0055.h \
+	Libraries/RTIMULib2/RTIMULib/RTIMU/IMUDrivers/RTPressure.h 
+
+OBJECTS = objects/RTMath.o \ 
+	objects/RTIMUHal.o \
+	objects/RTFusion.o \
+	objects/RTFusionKalman4.o \
+	objects/RTFusionRTQF.o \
+	objects/RTIMUSettings.o \
+	objects/RTIMUAccelCal.o \
+	objects/RTIMUMagCal.o \
+	objects/RTIMU.o \
+	objects/RTIMUNull.o \
+	objects/RTPressure.o \
+	objects/rs232.o \
+	objects/SensorLib2.o \
+	objects/navigation.o 
+
+# Build Rules
+
+Output/Robot: $(OBJECTS) objects/Robot.o objects/SensorLib2.o objects/navigation.o objects/rs232.o
+	test -d Output/ || mkdir -p Output/
+	$(LINK) $(LFLAGS) -o Robot $(OBJECTS) $(LIBS) ./Libraries/wiringPi/devLib/lcd.o -lwiringPi -pthread -lrt -lpigpio
+
+clean: 
+	-rm -f $(OBJECTS)
+	-rm -f *~core *.core
+
+# Compile
+
+objects/%.o : Libraries/RTIMULib2/RTIMULib/%.cpp $(DEPS)
+	test -d objects/ || mkdir -p objects/
+	$(CXX) -c -o $@ $< $(CFLAGS) $(INCPATH)
+
+objects%.o : Libraries/RTIMULib2/RTIMULib/IMUDrivers/%.cpp $(DEPS)
+	test -d objects/ || mkdir -p objects/
+	$(CXX) -c -o $@ $< $(CFLAGS) $(INCPATH)
+
+objects/rs232.o : Libraries/src/rs232.c
+		test -d objects/ || mkdir -p objects/
+		$(CXX) -c -o $@ $< $(CFLAGS) $(INCPATH)
+
+objects/SensorLib2.o : Libraries/inc/Adafruit_VL6180x.h Libraries/inc/VL53L0X.h Libraries/RTIMULib/RTIMULib2/RTMath.h Libraries/RTIMULib2/RTIMULib/RTIMULib.h 
+			test -d objects/ || mkdir -p objects/
+			$(CXX) -c -o $@ $< $(CFLAGS) -std=c++11 SensorLib2.cpp
+
+objects/navigation.o : Libraries/inc/navigation.h Libraries/src/navigation.cpp Libraries/inc/SensorLib2.h
+			test -d objects/ || mkdir -p objects/
+			$(CXX) -c -o $@ $< $(CFLAGS) -std=c++11 navigation.cpp
+
+objects/Robot.o : Robot3.cpp $(DEPS) objects/SensorLib2.o objects/rs232.o objects/navigation.o
+			test -d objects/ || mkdir -p objects/
+			$(CXX) -c -o $@ Robot3.cpp $(CFLAGS) $(INCPATH) -std=c++11 -lm -lwiringPi
+

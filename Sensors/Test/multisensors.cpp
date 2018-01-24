@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include "VL53L0X.h"
+#include <sys/ioctl.h>
 
 
 

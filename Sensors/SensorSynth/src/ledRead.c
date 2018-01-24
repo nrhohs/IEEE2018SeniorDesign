@@ -4,6 +4,7 @@
 #include <pigpio.h>
 #include <math.h>
 #include <sys/time.h>
+#include "ledRead.h"
 
 
 struct Command
@@ -11,8 +12,6 @@ struct Command
     int cmdVal;
     unsigned long cmdUSec;
 };
-
-typedef struct Command cmd;
 
 cmd *addCmd(int initVal, unsigned long initUSec);
 int binaryToDecimal(const char *);

@@ -68,11 +68,7 @@ bool VL53L0X::init(bool ioMode2v8) {
 	// Initialize I2C communication
   char buf[15];
   snprintf(buf,15,"/dev/i2c-1");
-  int fd = open(buf,O_RDWR);
-  if(ioctl(fd,I2C_SLAVE,this->address)<0)
-    printf("error\n");
-	this->i2cFileDescriptor = fd;
-
+  int fd = open(buf,O_RDWR); if(ioctl(fd,I2C_SLAVE,this->address)<0) printf("error\n"); this->i2cFileDescriptor = fd; 
 
 	// VL53L0X_DataInit() begin
 

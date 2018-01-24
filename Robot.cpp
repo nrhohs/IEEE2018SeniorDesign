@@ -26,7 +26,7 @@
 #include "RTMath.h"
 #include <stdbool.h>
 #include <stdio.h>
-#include "Libraries/Adafruit_VL6180x.h"
+#include "Libraries/inc/Adafruit_VL6180x.h"
 #include <stdlib.h>
 #include <stdint.h>
 #include <unistd.h>

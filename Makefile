@@ -1,26 +1,3 @@
-#///////////////////////////////////////////////////////////////////////////
-#//
-#//  This file is part of RTIMULib
-#//
-#//  Copyright (c) 2014-2015, richards-tech, LLC
-#//
-#//  Permission is hereby granted, free of charge, to any person obtaining a copy of
-#//  this software and associated documentation files (the "Software"), to deal in
-#//  the Software without restriction, including without limitation the rights to use,
-#//  copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
-#//  Software, and to permit persons to whom the Software is furnished to do so,
-#//  subject to the following conditions:
-#//
-#//  The above copyright notice and this permission notice shall be included in all
-#//  copies or substantial portions of the Software.
-#//
-#//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-#//  INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-#//  PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-#//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-#//  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-#//  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
 # Compiler, tools and options
 
 RTIMULIBPATH  = Libraries/RTIMULib2/RTIMULib
@@ -82,11 +59,20 @@ DEPS  = $(RTIMULIBPATH)/RTMath.h \
     $(RTIMULIBPATH)/IMUDrivers/RTPressureMS5611.h \
     $(RTIMULIBPATH)/IMUDrivers/RTPressureMS5637.h \
     $(RTIMULIBPATH)/pigpio.h \
-    $(RTIMULIBPATH)/Adafruit_VL6180x.h \
-    $(RTIMULIBPATH)/VL53L0X.h \
-    $(RTIMULIBPATH)/ledRead.h \
-    $(RTIMULIBPATH)/SensorLib2.h
+    Libraries/inc/vl53l0x_setup.h \
+    Libraries/inc/vl53l0x_tuning.h \
+    Libraries/inc/vl53l0x_types.h \
+    Libraries/inc/vl53l0x_api_calibration.h \
+    Libraries/inc/vl53l0x_api_core.h \
+    Libraries/inc/vl53l0x_api_ranging.h \
+    Libraries/inc/vl53l0x_api_strings.h \
+    Libraries/inc/vl53l0x_def.h \
+    Libraries/inc/vl53l0x_device.h \
+    Libraries/inc/vl53l0x_i2c_platform.h \
+    Libraries/inc/vl53l0x_interrupt_threshold_settings.h \
+    Libraries/inc/vl53l0x_platform_log.h 
 
+ 
 
 OBJECTS = objects/Robot.o \
     objects/RTMath.o \
@@ -113,11 +99,17 @@ OBJECTS = objects/Robot.o \
     objects/RTPressureLPS25H.o \
     objects/RTPressureMS5611.o \
     objects/RTPressureMS5637.o \
-    objects/Adafruit_VL6180X.o \
-    objects/ledRead.o \
-    objects/VL53L0X.o \
     objects/rs232.o \
-    objects/SensorLib2.o
+    objects/SensorLib2.o \
+    objects/Adafruit_VL6180X.o \
+    objects/vl53l0x_api.o \
+    objects/vl53l0x_platform.o \
+    objects/vl53l0x_api_calibration.o \
+    objects/vl53l0x_api_core.o \
+    objects/vl53l0x_api_ranging.o \
+    objects/vl53l0x_api_strings.o \
+    objects/vl53l0x_setup.o \
+    objects/navigation.o 
      
 
 MAKE_TARGET	= Robot
@@ -128,7 +120,7 @@ TARGET		= Output/$(MAKE_TARGET)
 
 $(TARGET): $(OBJECTS)
 	@$(CHK_DIR_EXISTS) Output/ || $(MKDIR) Output/
-	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(LIBS) ./Libraries/wiringPi/devLib/lcd.o -lwiringPi -pthread -lrt -lpigpio
+	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(LIBS) -std=c++11 ./Libraries/wiringPi/devLib/lcd.o -lwiringPi -pthread -lrt -lpigpio
 
 clean:
 	-$(DEL_FILE) $(OBJECTS)
@@ -144,44 +136,50 @@ $(OBJECTS_DIR)%.o : $(RTIMULIBPATH)/IMUDrivers/%.cpp $(DEPS)
 	@$(CHK_DIR_EXISTS) objects/ || $(MKDIR) objects/
 	$(CXX) -c -o $@ $< $(CFLAGS) $(INCPATH)
 
-objects/Adafruit_VL6180X.o : Libraries/Adafruit_VL6180x.cpp 
-	@$(CHK_DIR_EXISTS) objects/ || $(MKDIR) objects/
+objects/rs232.o : Libraries/rs232.c Libraries/rs232.h
+	test -d objects/ || mkdir -p objects/
+	$(CC) -c -o $@ $< $(CFLAGS) $(INCPATH)
+
+objects/Adafruit_VL6180X.o : Libraries/Adafruit_VL6180X.cpp Libraries/Adafruit_VL6180X.h
+	test -d objects/ || mkdir -p objects/
 	$(CXX) -c -o $@ $< $(CFLAGS) $(INCPATH)
 
-objects/rs232.o : Libraries/rs232.c
-	@$(CHK_DIR_EXISTS) objects/ || $(MKDIR) objects/
+objects/vl53l0x_api.o : Libraries/vl53l0x_api.c Libraries/inc/vl53l0x_api.h $(DEPS)
+	test -d objects/ || mkdir -p objects/
 	$(CC) -c -o $@ $< $(CFLAGS) $(INCPATH)
 
-objects/ledRead.o : Libraries/ledRead.c $(DEPS) 
-	@$(CHK_DIR_EXISTS) objects/ || $(MKDIR) objects/
+objects/vl53l0x_platform.o : Libraries/vl53l0x_platform.c Libraries/inc/vl53l0x_platform.h $(DEPS)
+	test -d objects/ || mkdir -p objects/
 	$(CC) -c -o $@ $< $(CFLAGS) $(INCPATH)
 
-objects/VL53L0X.o : Libraries/src/VL53L0X.cpp
-	@$(CHK_DIR_EXISTS) objects/ || $(MKDIR) objects/
-	$(CXX) -c -o $@ $< $(CFLAGS)-std=c++11  $(INCPATH)
+objects/vl53l0x_api_calibration.o : Libraries/vl53l0x_api_calibration.c $(DEPS)
+	test -d objects/ || mkdir -p objects/
+	$(CC) -c -o $@ $< $(CFLAGS) $(INCPATH)
 
-objects/SensorLib2.o : Libraries/src/SensorLib2.cpp $(DEPS)
-	@$(CHK_DIR_EXISTS) objects/ || $(MKDIR) objects/
-	$(CXX) -c -o $@ $< $(CFLAGS)-std=c++11  $(INCPATH)
+objects/vl53l0x_api_core.o : Libraries/vl53l0x_api_core.c $(DEPS)
+	test -d objects/ || mkdir -p objects/
+	$(CC) -c -o $@ $< $(CFLAGS) $(INCPATH)
 
-$(OBJECTS_DIR)Robot.o : Robot.cpp $(DEPS) objects/VL53L0X.o
-	@$(CHK_DIR_EXISTS) objects/ || $(MKDIR) objects/ 
-	$(CXX) -c -o $@ Robot.cpp $(CFLAGS) $(INCPATH) -lm -lwiringPi
+objects/vl53l0x_api_ranging.o : Libraries/vl53l0x_api_ranging.c $(DEPS)
+	test -d objects/ || mkdir -p objects/
+	$(CC) -c -o $@ $< $(CFLAGS) $(INCPATH)
 
-# Install
+objects/vl53l0x_api_strings.o : Libraries/vl53l0x_api_strings.c $(DEPS)
+	test -d objects/ || mkdir -p objects/
+	$(CC) -c -o $@ $< $(CFLAGS) $(INCPATH)
 
-install_target: FORCE
-	@$(CHK_DIR_EXISTS) $(INSTALL_ROOT)/usr/local/bin/ || $(MKDIR) $(INSTALL_ROOT)/usr/local/bin/
-	-$(INSTALL_PROGRAM) "Output/$(MAKE_TARGET)" "$(INSTALL_ROOT)/usr/local/bin/$(MAKE_TARGET)"
-	-$(STRIP) "$(INSTALL_ROOT)/usr/local/bin/$(MAKE_TARGET)"
+objects/vl53l0x_setup.o : Libraries/vl53l0x_setup.cpp $(DEPS)
+	test -d objects/ || mkdir -p objects/
+	$(CXX) -c -o $@ $< $(CFLAGS) $(INCPATH)
 
-uninstall_target:  FORCE
-	-$(DEL_FILE) "$(INSTALL_ROOT)/usr/local/bin/$(MAKE_TARGET)"
+objects/SensorLib2.o : Libraries/Adafruit_VL6180X.h Libraries/inc/vl53l0x_api.h Libraries/inc/vl53l0x_platform.h Libraries/SensorLib2.h Libraries/SensorLib2.cpp $(DEPS)
+	test -d objects/ || mkdir -p objects/
+	$(CXX) -c -o $@ $(CFLAGS) -std=c++11 Libraries/SensorLib2.cpp  -lrt -pthread -lpigpio
 
+objects/navigation.o : Libraries/navigation.h Libraries/navigation.cpp Libraries/SensorLib2.h
+	test -d objects/ || mkdir -p objects/
+	$(CXX) -c -o $@ $(CFLAGS) -std=c++11 Libraries/navigation.cpp
 
-install:  install_target  FORCE
-
-uninstall: uninstall_target   FORCE
-
-FORCE:
-
+objects/Robot.o : $(OBJECTS) Robot3.cpp $(DEPS) Libraries/navigation.h Libraries/SensorLib2.h Libraries/rs232.h
+	test -d objects/ || mkdir -p objects/
+	$(CXX) -c -o $@ Robot3.cpp -std=c++11 $(CFLAGS) $(INCPATH) -lm -lwiringPi -lrt -lpigpio -pthread
