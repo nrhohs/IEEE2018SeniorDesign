@@ -6,32 +6,32 @@ The purpose of this library is to make it easier to tweak
 how the robot traverses the arena.
 ********************************************************/
 
-void stop(int runtime);
-void stop_readIMU();
-void stop_readTOF();
+void stop(int runtime, int display);
+void stop_readTOF(TOF *sensor, int display);
 
-void fwd_timed(unsigned char speed, int runtime);
-void fwd_waitOnTOF();
-void fwd_waidOnIMU();
+void fwd_timed(unsigned char speed, int runtime, int display);
+void fwd_waitOnTOF(unsigned char speed, TOF *sensor, int display);
+void fwd_waidOnIMU(unsigned char speed, IMU *imu, int display);
 
-void bwd_timed(unsigned char speed, int runtime);
-void bwd_waitOnTOF();
-void bwd_waitOnIMU();
+void bwd_timed(unsigned char speed, int runtime, int display);
+void bwd_waitOnTOF(unsigned char speed, TOF *sensor, int display);
+void bwd_waitOnIMU(unsigned char speed, IMU *imu, int display);
 
-void strafeRight_timed(unsigned char speed, int runtime);
-void strafeRight_waitOnTOF();
-void strafeRight_waitOnIMU();
+void strafeRight_timed(unsigned char speed, int runtime, int display);
+void strafeRight_waitOnTOF(unsigned char speed, TOF *sensor, int display);
+void strafeRight_waitOnIMU(unsigned char speed, IMU *imu, int display);
 
-void strafeLeft_timed(unsigned char speed, int runtime);
-void strafeLeft_waitOnTOF();
-void strafeLeft_waitOnIMU();
+void strafeLeft_timed(unsigned char speed, int runtime, int display);
+void strafeLeft_waitOnTOF(unsigned char speed, TOF *sensor, int display);
+void strafeLeft_waitOnIMU(unsigned char speed, IMU *imu, int display);
 
-void turnRight_timed(unsigned char speed, int runtime);
-void turnRight_waitOnTOF();
-void turnRight_waitOnIMU();
+void turnRight_timed(unsigned char speed, int runtime, int display);
+void turnRight_waitOnTOF(unsigned char speed, TOF *sensor, int display);
+void turnRight_waitOnIMU(unsigned char speed, IMU *imu, int display);
 
-void turnLeft_timed(unsigned char speed, int runtime);
-void turnLeft_waitOnTOF();
-void turnLeft_waitOnIMU();
+void turnLeft_timed(unsigned char speed, int runtime, int display);
+void turnLeft_waitOnTOF(unsigned char speed, TOF *sensor, int display);
+void turnLeft_waitOnIMU(unsigned char speed, IMU *imu, int display);
 
-void wallFollow();
+void wallFollowDrive(unsigned char speed, unsigned char direction, TOF *face, TOF *sideOne, TOF *sideTwo, IMU *imu, int display);
+void wallFollowStrafe(unsigned char speed, unsigned char direction, TOF *face, TOF *sideOne, TOF *sideTwo, IMU *imu, int display);
