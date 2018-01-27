@@ -24,6 +24,58 @@ how the robot traverses the arena.
 
 #define CPORT_NR 24
 
+void waitOnTOF(TOF *tof, int targetDistance)
+{
+    int currDistance;
+    int targetMax=targetDistance+1;
+    int targetMin=targetDistance-1
+    currDistance  = getDistance(tof);
+    while (currDistance < targetMin || currDistance > targetMax)
+        currDistance  = getDistance(tof);
+    return;
+}
+
+void waitOnIMU(IMU *imu, char axis, double targetDegree)
+{
+    double current;
+    double stopTarget=(current+targetDegree)%360.0;
+    switch (axis)
+    {
+	case 'x':
+	    current=getCurrImuRoll(imu);
+	    break;
+	case 'y':
+	    current=getCurrImuPitch(imu);
+	    break;
+	case 'z':
+	    current=getCurrImuYaw(imu);
+	    break;
+	default:
+	    printf("Invalid axis");
+	    return;
+    }
+    double stopTarget=(current+targetDegree)%360.0;
+    double stopTargetMin=(stopTarget+360.0)%360.0 - 1.0;
+    double stopTargetMax=(stopTarget+360.0)%360.0 + 1.0;
+    while (currrent < stopTargetMin || current > stopTargetMax)
+    {
+    	switch (axis)
+    	{
+	    case 'x':
+	    	current=getCurrImuRoll(imu);
+	    	break;
+	    case 'y':
+	    	current=getCurrImuPitch(imu);
+	    	break;
+	    case 'z':
+	    	current=getCurrImuYaw(imu);
+	        break;
+        }
+    }
+    return;
+}
+
+
 //Stops the robot for the amount of time specified by int runtime (in milliseconds)
 void stop(int runtime, int display){
     unsigned char direction = 0;									// Set direction to STOP
@@ -35,7 +87,7 @@ void stop(int runtime, int display){
     usleep(runtime);												// Wait for X milliseconds
 }
 
-void stop_readTOF(TOF *sensor, int display);
+int stop_readTOF(TOF *sensor, int display);
 
 // Moves the robot forward at a specified speed for a set amount of time
 void fwd_timed(unsigned char speed, int runtime, int display){
@@ -104,8 +156,7 @@ void turnRight_timed(unsigned char speed, int runtime, int display){
     usleep(runtime);
 }
 
-void turnRight_waitOnTOF(unsigned char speed, TOF *sensor, int display);
-void turnRight_waitOnIMU(unsigned char speed, IMU *imu, int display);
+void turnRight_waitOnIMU(unsigned char speed, IMU *imu, double targetYaw, int display);
 
 // Turns the robot left about it's center axis at a specified speed for a set amount of time
 void turnLeft_timed(unsigned char speed, int runtime, int display){
@@ -118,8 +169,7 @@ void turnLeft_timed(unsigned char speed, int runtime, int display){
     usleep(runtime);
 }
 
-void turnLeft_waitOnTOF(unsigned char speed, TOF *sensor, int display);
-void turnLeft_waitOnIMU(unsigned char speed, IMU *imu, int display);
+void turnLeft_waitOnIMU(unsigned char speed, IMU *imu, double targetYaw, int display);
 
 void wallFollowDrive(unsigned char speed, unsigned char direction, TOF *face, TOF *sideOne, TOF *sideTwo, IMU *imu, int display);
 void wallFollowStrafe(unsigned char speed, unsigned char direction, TOF *face, TOF *sideOne, TOF *sideTwo, IMU *imu, int display);
