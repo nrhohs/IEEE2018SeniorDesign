@@ -68,7 +68,7 @@ struct shortRange {
     uint8_t status;
 };
 
-SRANGE *initVL6180XwoMUX() {
+SRANGE *initShortRangewoMUX() {
     SRANGE *newSRANGE =(SRANGE *) malloc(sizeof(SRANGE));
     newSRANGE->vl = Adafruit_VL6180X();
     newSRANGE->mux=NULL;
@@ -84,7 +84,7 @@ SRANGE *initVL6180XwoMUX() {
  *
  *Assumes the TOF is connected by MUX
  */
-SRANGE *initVL6180X(MUX *mux,int inputNo) {
+SRANGE *initShortRange(MUX *mux,int inputNo) {
     SRANGE *newSRANGE =(SRANGE *) malloc(sizeof(SRANGE));
     newSRANGE->vl = Adafruit_VL6180X();
     newSRANGE->mux=mux;
@@ -100,7 +100,9 @@ uint8_t getShortRangewoMUX(SRANGE *srange) {
 
 /*
  *
- * Gets the distance in mm for VL6180X
+ * Gets the distance in mm for VL6180X {
+182
+    SRANGE
  *
  * Gets the distance from the short range TOF
  * specified by the user
@@ -118,7 +120,7 @@ uint8_t getShortRange(SRANGE *srange) {
 	srange->status=-1;
     }
     return srange->range;
-}
+ {
 
 
 /* VL53L0X */
@@ -142,7 +144,7 @@ LRANGE *initLongrangewoMUX() {
  */
 LRANGE *initLongrange(MUX *mux, int inputNo) {
     LRANGE *lrange=(LRANGE *)malloc(sizeof(LRANGE));
-    VL53L0X vl;
+    VL53L0X vl = new VL53L0X();
     vl.init();
     vl.setTimeout(200);
     lrange->vl53l0x=vl;
@@ -175,6 +177,31 @@ uint16_t getLongRange(LRANGE *lrange) {
     return distance;
 }
 
+/*TOF*/
+struct tof {
+    SRANGE *srange;
+    LRANGE *lrange;
+    int isLRANGE;
+    MUX *mux;
+    int inputNo;
+};
+	
+TOF *newTOF(int rangeType,MUX *mux,int input) {
+    //rangeType 0 = short range
+    // 		1 = long range
+    if (rangeType==0)
+	initShortRange(mux,input);
+    else if(rangeType==1)
+	initLongRange(mux,input);
+    else {
+    	printf("Invalid range type for TOF\n");
+	return NULL;
+    }
+    return tof;
+
+int isLRANGE(TOF *tof) {
+    return tof->isLRANGE
+}
 
 /* IRLED READER */
 int readIRCode()
