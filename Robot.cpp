@@ -61,8 +61,9 @@ int main()
 	softPwmWrite(0,0);
 
 	//Initializing serial connection
-	int bdrate=9600;
+	int bdrate = 9600;
 	char mode[]={'8','N','1',0}; // 8 data bits, no parity, 1 stop bit
+	int cport_nr = 24;
 	if(RS232_OpenComport(cport_nr, bdrate, mode)){
 		printf("Can not open comport\n");
 		return(0);
