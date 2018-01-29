@@ -109,7 +109,7 @@ void fwd_timed(unsigned char speed, int runtime, int display){
     usleep(runtime);												// Move for X time
 }
 
-void fwd_waitOnTOF(unsigned char speed, TOF *sensor, int target, int display) {
+void fwd_waitOnTOF(unsigned char speed, TOF *sensor, int display, int target=100) {
     unsigned char direction = 1;
     RS232_SendByte(CPORT_NR, direction);
     RS232_SendByte(CPORT_NR, speed);
@@ -143,7 +143,7 @@ void bwd_timed(unsigned char speed, int runtime, int display){
 }
 
 // MOves the robot backwards until TOF target distance reached
-void bwd_waitOnTOF(unsigned char speed, TOF *sensor, int target, int display) {
+void bwd_waitOnTOF(unsigned char speed, TOF *sensor, int display, int target=100) {
     unsigned char direction = 2;
     RS232_SendByte(CPORT_NR, direction);
     RS232_SendByte(CPORT_NR, speed);
@@ -180,7 +180,7 @@ void strafeRight_timed(unsigned char speed, int runtime, int display){
     usleep(runtime);
 }
 
-void strafeRight_waitOnTOF(unsigned char speed, TOF *sensor, int target, int display) {
+void strafeRight_waitOnTOF(unsigned char speed, TOF *sensor, int display, int target=100) {
     unsigned char direction = 3;
     //Set direction to STRAFE RIGHT
     RS232_SendByte(CPORT_NR, direction);
@@ -217,7 +217,7 @@ void strafeLeft_timed(unsigned char speed, int runtime, int display){
     usleep(runtime);
 }
 
-void strafeLeft_waitOnTOF(unsigned char speed, TOF *sensor, int target, int display) {
+void strafeLeft_waitOnTOF(unsigned char speed, TOF *sensor, int display, int target=100) {
     unsigned char direction = 4;
     //Set direction to STRAFE LEFT
     RS232_SendByte(CPORT_NR, direction);
@@ -253,7 +253,7 @@ void turnRight_timed(unsigned char speed, int runtime, int display){
     usleep(runtime);
 }
 
-void turnRight_waitOnIMU(unsigned char speed, IMU *imu, char axis, double target, int display) {
+void turnRight_waitOnIMU(unsigned char speed, IMU *imu, double targetYaw, int display) {
     unsigned char direction = 5;
     //Set direction to TURN RIGHT
     RS232_SendByte(CPORT_NR, direction);
@@ -261,7 +261,7 @@ void turnRight_waitOnIMU(unsigned char speed, IMU *imu, char axis, double target
     printf("Sent to Arduino: 'TURN RIGHT at %d for %d '\n", speed, runtime);
     lcdPosition(display,0,0);
     lcdPrintf(display,"Sent: '%3d %3d'", direction, speed);
-    waitOnIMU(imu,axis,target);
+    waitOnIMU(imu,'z',targetYaw);
 }
 
 
@@ -276,7 +276,7 @@ void turnLeft_timed(unsigned char speed, int runtime, int display){
     usleep(runtime);
 }
 
-void turnLeft_waitOnIMU(unsigned char speed, IMU *imu, char axis, double target, int display) {
+void turnLeft_waitOnIMU(unsigned char speed, IMU *imu, double targetYaw, int display) {
     unsigned char direction = 6;
     //Set direction to TURN LEFT
     RS232_SendByte(CPORT_NR, direction);
@@ -284,7 +284,7 @@ void turnLeft_waitOnIMU(unsigned char speed, IMU *imu, char axis, double target,
     printf("Sent to Arduino: 'TURN LEFT at %d for %d '\n", speed, runtime);
     lcdPosition(display,0,0);
     lcdPrintf(display,"Sent: '%3d %3d'", direction, speed);
-    waitOnIMU(imu,axis,target);
+    waitOnIMU(imu,'z',targetYaw);
 }
 
 void wallFollowDrive(unsigned char speed, unsigned char direction, TOF *face, TOF *sideOne, TOF *sideTwo, IMU *imu, int display);
