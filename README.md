@@ -3,6 +3,7 @@
 This repository is meant to serve as the main codebase for the University of Alabama Senior Design Team's entry into the [IEEE SoutheastCon 2018 Hardware Competition](http://ewh.ieee.org/reg/3/southeastcon2018/student.html).
 
 #Acknowledgements
+
 We would like to acknowledge:
 
 * Dr. Kenneth Ricks, our Faculty Advisor
