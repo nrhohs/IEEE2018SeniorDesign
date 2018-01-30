@@ -5,8 +5,8 @@
 #include <stdbool.h>
 #include <linux/i2c-dev.h>
 #include <fcntl.h>
-#include "VL53L0X.h"
 #include "Adafruit_VL6180x.h"
+#include "VL53L0X.h"
 #include "ledRead.h"
 #include "RTIMULib.h"
 #include "RTMath.h"
@@ -28,10 +28,10 @@ void setMUXInput(MUX *, int);
  *
  */
 MUX *initMUX() {
-    MUX *newMUX = (MUX *)malloc(sizeof(MUX));
+    MUX *newMUX = (MUX *) malloc(sizeof(MUX));
     char buf[15];
-    int mux = open(buf,O_RDWR);
-    if (ioctl(mux,I2C_SLAVE,0x70)<0) {
+    newMUX->muxStatus = open(buf,O_RDWR);
+    if (ioctl(newMUX->muxStatus,I2C_SLAVE,0x70)<0) {
 	printf("MUX initialization failed\n");
 	setMUXStatus(newMUX,-1);
 	return newMUX;
@@ -51,7 +51,7 @@ void switchMUX(MUX *mux, int inputNo) {
     if(!getMUXStatus(mux)) {
         char data_write[1];
         data_write[0] = 1<<inputNo;
-        write(mux->initVal, data_write, 1);
+        write(mux->muxStatus, data_write, 1);
 	setMUXInput(mux,1);
     }
     else {
@@ -60,49 +60,22 @@ void switchMUX(MUX *mux, int inputNo) {
 }
 
 /* VL6180X */
-struct shortRange {
-    Adafruit_VL6180X vl;
-    MUX *mux;
-    int inputNo;
-    uint8_t range;
-    uint8_t status;
-};
-
-SRANGE *initShortRangewoMUX() {
-    SRANGE *newSRANGE =(SRANGE *) malloc(sizeof(SRANGE));
-    newSRANGE->vl = Adafruit_VL6180X();
-    newSRANGE->mux=NULL;
-    newSRANGE->inputNo=0;
-    return newSRANGE;
-}
 /*
  *
- * Initializer for the short range VL6180X TOF
- * 
- * This function initializes the TOF and returns
- * the SRANGE object
+ * Initializer for the short range VL6180X  
  *
- *Assumes the TOF is connected by MUX
  */
-SRANGE *initShortRange(MUX *mux,int inputNo) {
-    SRANGE *newSRANGE =(SRANGE *) malloc(sizeof(SRANGE));
+SRANGE *initVL6180X(MUX *mux,int inputNo) {
+    SRANGE *newSRANGE = (SRANGE *) malloc(sizeof(SRANGE));
     newSRANGE->vl = Adafruit_VL6180X();
     newSRANGE->mux=mux;
     newSRANGE->inputNo=inputNo;
     return newSRANGE;
 }
 
-uint8_t getShortRangewoMUX(SRANGE *srange) {
-    srange->range=srange->vl.Adafruit_VL6180X::readRange();
-    srange->status=srange->vl.readRangeStatus();
-    return srange->range;
-}
-
 /*
  *
- * Gets the distance in mm for VL6180X {
-182
-    SRANGE
+ * Gets the distance in mm for VL6180X
  *
  * Gets the distance from the short range TOF
  * specified by the user
@@ -120,31 +93,18 @@ uint8_t getShortRange(SRANGE *srange) {
 	srange->status=-1;
     }
     return srange->range;
- {
+}
 
 
 /* VL53L0X */
-struct longRange {
-    VL53L0X vl53l0x;
-    MUX *mux;
-    int inputNo;
-};
-LRANGE *initLongrangewoMUX() {
-    LRANGE *lrange=(LRANGE *)malloc(sizeof(LRANGE));
-    VL53L0X vl;
-    vl.init();
-    vl.setTimeout(200);
-    lrange->vl53l0x=vl;
-    return lrange;
-}
 /*
  * Initializes the VL53L0X TOF
  *
  * Function returns a LRANGE object
  */
 LRANGE *initLongrange(MUX *mux, int inputNo) {
-    LRANGE *lrange=(LRANGE *)malloc(sizeof(LRANGE));
-    VL53L0X vl = new VL53L0X();
+    LRANGE *lrange=(LRANGE *) malloc(sizeof(LRANGE));
+    VL53L0X vl;
     vl.init();
     vl.setTimeout(200);
     lrange->vl53l0x=vl;
@@ -152,19 +112,7 @@ LRANGE *initLongrange(MUX *mux, int inputNo) {
     lrange->inputNo=inputNo;
     return lrange;
 }
-uint16_t getLongRangewoMUX(LRANGE *lrange) {
-    uint16_t distance = lrange->vl53l0x.readRangeSingleMillimeters();
-    if (lrange->vl53l0x.timeoutOccurred())
-	printf("Timeout occurred. Invalid measurement.\n");
-    return distance;
-}
 
-/*
- * Gets the distance in mm for VL53L0X
- *
- * Function gets the measured range from the user-specified
- * LRANGE object
- */
 uint16_t getLongRange(LRANGE *lrange) {
     if (!getMUXStatus(lrange->mux)) {
 	//switch MUX input if needed
@@ -177,31 +125,53 @@ uint16_t getLongRange(LRANGE *lrange) {
     return distance;
 }
 
+
+
 /*TOF*/
-struct tof {
-    SRANGE *srange;
-    LRANGE *lrange;
-    int isLRANGE;
-    MUX *mux;
-    int inputNo;
-};
-	
 TOF *newTOF(int rangeType,MUX *mux,int input) {
+    TOF *tof=(TOF *) malloc(sizeof(TOF));
     //rangeType 0 = short range
     // 		1 = long range
     if (rangeType==0)
-	initShortRange(mux,input);
+    {
+	SRANGE *srange=initVL6180X(mux,input);
+	tof->srange=srange;
+	tof->isLRANGE=rangeType;
+	tof->mux=mux;
+	tof->inputNo=input;
+    }
     else if(rangeType==1)
-	initLongRange(mux,input);
+    {
+	LRANGE *lrange=initLongRange(mux,input);
+	tof->lrange=lrange;
+	tof->isLRANGE=rangeType;
+	tof->mux=mux;
+	tof->inputNo=input;
+    }
     else {
     	printf("Invalid range type for TOF\n");
 	return NULL;
     }
     return tof;
+}
 
 int isLRANGE(TOF *tof) {
-    return tof->isLRANGE
+    return tof->isLRANGE;
 }
+
+int getDistance(TOF *tof) {
+    int distance;
+    if (isLRANGE(tof)) {
+	LRANGE *lrtof=tof->lrange;
+	distance=lrtof->vl53l0x.readRangeSingleMillimeters();
+    }
+    else {
+	SRANGE *srtof=tof->srange;
+	distance=srtof->vl.readRange();
+    }
+    return distance;
+}
+
 
 /* IRLED READER */
 int readIRCode()
@@ -253,7 +223,7 @@ double getCurrImuRoll(RTIMU *imu) {
 double getCurrImuPitch(RTIMU *imu) {
     RTIMU_DATA imuData = imu->getIMUData();
     RTVector3 vec=imuData.fusionPose;
-    double pitch=vec.y() * RTMATH_RAD_TO_DEGREE;
+    double pitch=vec.x() * RTMATH_RAD_TO_DEGREE;
     printf("current:%f \n",pitch);
     return pitch;
 }
