@@ -14,17 +14,17 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <unistd.h>
-#include "Adafruit_VL6180x.h"
 #include "VL53L0X.h"
 
 /* I2C Expander MUX */
 struct mux {
+    int muxStatus;
     int initVal;
     int activeInput;
 };
-#typedef struct mux MUX;
+typedef struct mux MUX;
 
-void initMUX();
+MUX *initMUX();
 void switchMUX(MUX *,int);
 
 
@@ -36,7 +36,10 @@ struct shortRange {
     uint8_t range;
     uint8_t status;
 };
-#typedef struct shortRange SRANGE;
+
+typedef struct shortRange SRANGE;
+
+SRANGE *initVL6180XwoMUX();
 
 /* Method: initVL6180X
     Description: Initializes and returns short range TOF by providing
@@ -47,7 +50,8 @@ SRANGE *initVL6180X(MUX *,int);
     Description: Input multiplexor value as parameter and
     		receive 8-bit unsigned val range value (mm)
 */
-void getShortRange(SRANGE *);
+uint8_t getShortRangewoMUX(SRANGE *);
+uint8_t getShortRange(SRANGE *);
 
 /* Adafruit VL53L0X */
 struct longRange {
@@ -55,20 +59,36 @@ struct longRange {
     MUX *mux;
     int inputNo;
 };
-#typdef struct longRange LRANGE;
 
+typedef struct longRange LRANGE;
 /* Method: initLongRange
     Description: Initializes VL53L0X at mux inputNo to long range mode
 		w/ timing budget as specified in function call parameter
 		"timingBudgetMicro"
 */
+LRANGE *initLongRangewoMUX();
 LRANGE *initLongRange(MUX *,int);
     
 /* Method: getLongRange
     Description: Input multiplexor value as parameter and
 		receive 16-bit unsigned val range value (mm)
 */
-LRANGE *getLongRange(LRANGE *);
+uint16_t getLongRangewoMUX(LRANGE *);
+uint16_t getLongRange(LRANGE *);
+
+/*TOF*/
+struct tof {
+    SRANGE *srange;
+    LRANGE *lrange;
+    int isLRANGE;
+    MUX *mux;
+    int inputNo;
+};
+
+typedef struct tof TOF;
+TOF *newTOF(int ,MUX *,int);
+int isLRANGE(TOF *);
+int getDistance(TOF *tof);
 
 /* IR Reader */
 /*
@@ -105,7 +125,5 @@ double getCurrImuYaw(RTIMU *imu);
  * Retriever pitch from IMU as double
  * 
  */
-void waitOnImuYaw(RTIMU *imu, double start, Adafruit_VL6180X *vl);
-
 
 #endif
