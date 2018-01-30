@@ -17,6 +17,7 @@ library so that the
 #include <mcp23017.h>
 #include <lcd.h>
 #include <softPwm.h>
+#include "navigation.h"
 
 int main()
 {
