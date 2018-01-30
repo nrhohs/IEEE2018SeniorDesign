@@ -35,7 +35,7 @@ void waitOnTOF(TOF *tof, int targetDistance=100)
     return;
 }
 
-void waitOnIMU(IMU *imu, char axis, double targetDegree)
+void waitOnIMU(RTIMU *imu, char axis, double targetDegree)
 {
     double current;
     double stopTarget=(current+targetDegree)%360.0;
@@ -122,7 +122,7 @@ void fwd_waitOnTOF(unsigned char speed, TOF *sensor, int display, int target=100
 	waitOnTOF(sensor,target);
 }
     
-void fwd_waidOnIMU(unsigned char speed, IMU *imu, char axis, double target, int display);
+void fwd_waitOnIMU(unsigned char speed, RTIMU *imu, char axis, double target, int display);
     unsigned char direction = 1;
     RS232_SendByte(CPORT_NR, direction);
     RS232_SendByte(CPORT_NR, speed);
@@ -158,7 +158,7 @@ void bwd_waitOnTOF(unsigned char speed, TOF *sensor, int display, int target=100
 
 // Moves the robot backwards until IMU target degre on target axis acquired
 //TMG function needs target degree and axis for IMU
-void bwd_waitOnIMU(unsigned char speed, IMU *imu, char axis, double target, int display)
+void bwd_waitOnIMU(unsigned char speed, RTIMU *imu, char axis, double target, int display)
     unsigned char direction = 2;
     RS232_SendByte(CPORT_NR, direction);
     RS232_SendByte(CPORT_NR, speed);
@@ -194,7 +194,7 @@ void strafeRight_waitOnTOF(unsigned char speed, TOF *sensor, int display, int ta
 	waitOnTOF(sensor,target);
 }
 
-void strafeRight_waitOnIMU(unsigned char speed, IMU *imu, char axis, double target, int display) {
+void strafeRight_waitOnIMU(unsigned char speed, RTIMU *imu, char axis, double target, int display) {
     unsigned char direction = 3;
     //Set direction to STRAFE RIGHT
     RS232_SendByte(CPORT_NR, direction);
@@ -231,7 +231,7 @@ void strafeLeft_waitOnTOF(unsigned char speed, TOF *sensor, int display, int tar
 	waitOnTOF(sensor,target);
 }
 
-void strafeLeft_waitOnIMU(unsigned char speed, IMU *imu, char axis, double target, int display) {
+void strafeLeft_waitOnIMU(unsigned char speed, RTIMU *imu, char axis, double target, int display) {
     unsigned char direction = 4;
     //Set direction to STRAFE LEFT
     RS232_SendByte(CPORT_NR, direction);
@@ -253,7 +253,7 @@ void turnRight_timed(unsigned char speed, int runtime, int display){
     usleep(runtime);
 }
 
-void turnRight_waitOnIMU(unsigned char speed, IMU *imu, double targetYaw, int display) {
+void turnRight_waitOnIMU(unsigned char speed, RTIMU *imu, double targetYaw, int display) {
     unsigned char direction = 5;
     //Set direction to TURN RIGHT
     RS232_SendByte(CPORT_NR, direction);
@@ -276,7 +276,7 @@ void turnLeft_timed(unsigned char speed, int runtime, int display){
     usleep(runtime);
 }
 
-void turnLeft_waitOnIMU(unsigned char speed, IMU *imu, double targetYaw, int display) {
+void turnLeft_waitOnIMU(unsigned char speed, RTIMU *imu, double targetYaw, int display) {
     unsigned char direction = 6;
     //Set direction to TURN LEFT
     RS232_SendByte(CPORT_NR, direction);
