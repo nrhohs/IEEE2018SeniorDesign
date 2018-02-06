@@ -37,5 +37,8 @@ void turnRight_waitOnIMU(unsigned char speed, RTIMU *imu, double targetYaw, int 
 void turnLeft_timed(unsigned char speed, int runtime, int display);
 void turnLeft_waitOnIMU(unsigned char speed, RTIMU *imu, double targetYaw, int display);
 
+void arcLeft(unsigned char trim, unsigned char direction, int display); 
+void arcRight(unsigned char trim, unsigned char direction, int display); 
+
 void wallFollowDrive(unsigned char speed, unsigned char direction, TOF *face, TOF *sideOne, TOF *sideTwo, RTIMU *imu, int display);
 void wallFollowStrafe(unsigned char speed, unsigned char direction, TOF *face, TOF *sideOne, TOF *sideTwo, RTIMU *imu, int display);

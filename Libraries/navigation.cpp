@@ -294,5 +294,95 @@ void turnLeft_waitOnIMU(unsigned char speed, RTIMU *imu, double targetYaw, int d
     waitOnIMU(imu,'z',targetYaw);
 }
 
-void wallFollowDrive(unsigned char speed, unsigned char direction, TOF *face, TOF *sideOne, TOF *sideTwo, RTIMU *imu, int display);
+void arcLeft(unsigned char trim, unsigned char direction, int display){
+    if(direction == 0){
+        RS232_SendByte(CPORT_NR,20);
+    }
+    else if(direction == 1){
+        RS232_SendByte(CPORT_NR,19);
+    }
+    else{
+        printf("Error in \"arcLeft\": invalid direction\n"); 
+        return; 
+    }
+    RS232_SendByte(CPORT_NR,trim);
+    printf("Sent to Arduino: 'ARCH LEFT at %d'\n", trim);
+    lcdPosition(display,0,0); 
+    lcdPrintf(display,"Sent: 'archLeft %3d %3d'",direction,trim); 
+}
+
+void arcRight(unsigned char trim, unsigned char direction, int display){
+    if(direction == 0){
+        RS232_SendByte(CPORT_NR,19); 
+    }
+    else if(direction == 1){
+        RS232_SendByte(CPORT_NR,20); 
+    } 
+    else{
+        printf("Error in \"arcRight\": invalid direction\n"); 
+        return; 
+    } 
+    RC232_SendByte(CPORT_NR,trim);
+    printf("Sent to Arduino: 'ARCH RIGHT at %d'\n", trim); 
+    lcdPosition(display,0,0); 
+    lcdPrintf(display,"Sent: 'archRight %3d %3d'", direction,trim); 
+}
+
+void wallFollowDrive(unsigned char speed, unsigned char direction, TOF *face, TOF *tof_front, TOF *tof_back, int tolerance, unsigned char wall_side, int face_limit, int display){
+        int init_dist = (getDistance(tof_front) + getDistance(tof_back))/2; 
+        
+        //define correction functions
+        void (*moveAway)(unsigned char,unsigned char,int) = (wall_side == 'r') ? arcLeft : arcRight;  
+        void (*moveToward)(unsigned char,unsigned char,int) = (wall_side == 'r') ? arcRight : arcLeft;          
+
+        int COR_NULL = 0; 
+        int COR_ANG = 1; 
+        int COR_DIST = 2; 
+        
+        int c_stat = COR_NULL; 
+        
+        unsigned char trim = 10; 
+
+        while(getDistance(face) > face_limit){
+            sleep(10); 
+            int dist_front = getDistance(tof_front); 
+            int dist_back = getDistance(tof_back); 
+            int dist_center = (dist_front + dist_back)/2; 
+            int dist_error = init_dist - dist_center; 
+            int delta = dist_front - dist_back; 
+            if(c_stat == COR_ANG){
+                if(delta > tolerance){
+                    moveToward(trim,direction,display);
+                    continue; 
+                } 
+                else if(delta < -tolerance){{
+                    moveAway(trim,direction,display);
+                    continue; 
+                } 
+            } 
+            else if(c_stat == COR_DIST){
+                if(dist_error > tolerance){
+                    moveAway(trim,direction,display); 
+                    continue; 
+                }
+                else if(dist_error < -tolerance){
+                    moveToward(trim,direction,display); 
+                    continue; 
+                }
+            }
+            
+            RC232_SendByte(CPORT_NR,direction);
+            RC232_SendByte(CPORT_NR,speed); 
+            
+            if(abs(delta) > tolerance){
+                c_stat = COR_AVG; 
+            } 
+            else if(abs(dist_error) > tolerance){
+                c_stat = COR_DIST; 
+            } 
+            else{
+                c_stat = COR_NULL; 
+            } 
+        }
+} 
 void wallFollowStrafe(unsigned char speed, unsigned char direction, TOF *face, TOF *sideOne, TOF *sideTwo, RTIMU *imu, int display);
