@@ -35,6 +35,7 @@ void setMUXInput(MUX *, int);
 MUX *initMUX() {
     MUX *newMUX = (MUX *) malloc(sizeof(MUX));
     char buf[15];
+    snprintf(buf,15,"/dev/i2c-1");
     newMUX->muxStatus = open(buf,O_RDWR);
     if (ioctl(newMUX->muxStatus,I2C_SLAVE,0x70)<0) {
 	printf("MUX initialization failed\n");
@@ -44,6 +45,7 @@ MUX *initMUX() {
     else {
 	setMUXStatus(newMUX,0);
 	switchMUX(newMUX,0);
+	printf("MUX initialization successfull\n");
 	return newMUX;
     }
 }
@@ -54,10 +56,9 @@ MUX *initMUX() {
  */
 void switchMUX(MUX *mux, int inputNo) {
     if(!getMUXStatus(mux)) {
-        char data_write[1];
-        data_write[0] = 1<<inputNo;
-        write(mux->muxStatus, data_write, 1);
-	setMUXInput(mux,1);
+        mux->data_write[0] = 1<<inputNo;
+        write(mux->muxStatus, mux->data_write, 1);
+	setMUXInput(mux,inputNo);
     }
     else {
 	printf("Cannot switch MUX, status error\n");
@@ -72,10 +73,10 @@ void switchMUX(MUX *mux, int inputNo) {
  */
 SRANGE *initVL6180X(MUX *mux,int inputNo) {
     SRANGE *newSRANGE = (SRANGE *) malloc(sizeof(SRANGE));
-    Adafruit_VL6180X vl6180x = Adafruit_VL6180X();
-    newSRANGE->vl = vl6180x;
+    newSRANGE->vl = Adafruit_VL6180X();
     newSRANGE->mux=mux;
     newSRANGE->inputNo=inputNo;
+    newSRANGE->vl.begin();
     return newSRANGE;
 }
 
@@ -88,19 +89,20 @@ SRANGE *initVL6180X(MUX *mux,int inputNo) {
  */
 uint8_t getShortRange(SRANGE *srange) {
     if (!getMUXStatus(srange->mux)) {
-	//switch MUX input if needed
-	if (getMUXInput(srange->mux)!=srange->inputNo)
-	    switchMUX(srange->mux,srange->inputNo);
-	srange->range=srange->vl.readRange();
+	printf("srange Mux input:%d",srange->inputNo);
 	srange->status=srange->vl.readRangeStatus();
+
+	if (srange->status==0)
+	    srange->range=srange->vl.readRange();
+	else
+	    printf("Srange error %d cannot read range\n",srange->status);
     }
     else {
-	srange->range=-1;
-	srange->status=-1;
+	srange->range=1;
+	srange->status=1;
     }
     return srange->range;
 }
-
 
 void print_range_status(LRANGE *lrange) {
     char buf[VL53L0X_MAX_STRING_LENGTH];
@@ -202,35 +204,37 @@ LRANGE *initLongRange(MUX *mux, int inputNo) {
     lrange->mux=mux;
     lrange->inputNo=inputNo;
 
+    switchMUX(mux,inputNo);
+
     //Initalize I2C comms
     lrange->pMyDevice->I2cDevAddr = 0x29;
-
     //Can choose between i2c-0 and ic2-1
     lrange->pMyDevice->fd = VL53L0X_i2c_init("/dev/i2c-1", lrange->pMyDevice->I2cDevAddr);
     if (lrange->MyDevice.fd<0) {
 	lrange->Status = VL53L0X_ERROR_CONTROL_INTERFACE;
 	printf("Failed to init on i2c\n");
     }
-
-
-    //Calibrate for Single Range Measurement
-    lrange->Status = calibrateSingleMeasure(lrange);
+    printf("comms init\n");
 
     //Data initialization
     lrange->Status = dataInitializeLR(lrange);
+    printf("lrange data initialized");
+
+    //Calibrate for Single Range Measurement
+    lrange->Status = calibrateSingleMeasure(lrange);
+    printf("lrange calibrated\n");
     
     return lrange;
 }
 
 uint16_t getLongRange(LRANGE *lrange) {
-    VL53L0X_RangingMeasurementData_t RangingMeasurementData;
-    if (!getMUXStatus(lrange->mux)) {
-	//switch MUX input if needed
-	if (getMUXInput(lrange->mux)!=lrange->inputNo)
-	    switchMUX(lrange->mux,lrange->inputNo);
-    }
+    switchMUX(lrange->mux,lrange->inputNo);
 
+    VL53L0X_RangingMeasurementData_t RangingMeasurementData;
 	lrange->Status = VL53L0X_PerformSingleRangingMeasurement(lrange->pMyDevice,&RangingMeasurementData);
+	printf("%s",lrange->Status);
+        print_range_status(&RangingMeasurementData);
+	printf("Measured distance: %i\n\n", RangingMeasurementData.RangeMilliMeter);
     	uint16_t distance = RangingMeasurementData.RangeMilliMeter;
 	lrange->RangingMeasurementData=&RangingMeasurementData;
     	return distance;
@@ -242,6 +246,7 @@ TOF *newTOF(int rangeType,MUX *mux,int input) {
     // 		1 = long range
     if (rangeType==0)
     {
+	printf("input set for %d\n",input);
 	SRANGE *srange=initVL6180X(mux,input);
 	tof->srange=srange;
 	tof->isLRANGE=rangeType;
@@ -250,7 +255,7 @@ TOF *newTOF(int rangeType,MUX *mux,int input) {
     }
     else if(rangeType==1)
     {
-	LRANGE *lrange=initLongrange(mux,input);
+	LRANGE *lrange=initLongRange(mux,input);
 	tof->lrange=lrange;
 	tof->isLRANGE=rangeType;
 	tof->mux=mux;
@@ -274,8 +279,8 @@ int getDistance(TOF *tof) {
 	distance=getLongRange(lrtof);
     }
     else {
-	SRANGE *srtof=tof->srange;
-	distance=srtof->vl.readRange();
+	//distance=tof->srange->vl.readRange();
+	distance=getShortRange(tof->srange);
     }
     return distance;
 }
