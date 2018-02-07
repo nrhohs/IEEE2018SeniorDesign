@@ -22,6 +22,7 @@
 /* I2C Expander MUX */
 struct mux {
     int muxStatus;
+    char data_write[1];
     int initVal;
     int activeInput;
 };
