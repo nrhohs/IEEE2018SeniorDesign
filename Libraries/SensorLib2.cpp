@@ -398,7 +398,7 @@ int routeread()
         int ii = 0;
         
         while (value)
-            value = gpioRead(23);
+            value = gpioRead(16);
         
         //Get the time when pulse is detected (0 input)
         gettimeofday(&timeStart,NULL);
@@ -419,7 +419,7 @@ int routeread()
             }
             
             previousVal = value;
-            value = gpioRead(23);
+            value = gpioRead(16);
         }
 
 	char *codeStr = decodeSignal(cmdRecord,maxToggles);
