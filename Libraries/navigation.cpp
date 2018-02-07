@@ -84,7 +84,7 @@ void stop(int runtime, int display){
     //TMG added 1/31/18
     unsigned char speed = 0;
     RS232_SendByte(CPORT_NR, direction);							// Send direction
-    //Speed on stop signal not declared (is it 0?)
+    //Speed on stop signal not declared
     //RS232_SendByte(CPORT_NR, speed);							// Send speed
     printf("Sent to Arduino: 'STOP for %d'\n", runtime);			// Cmdline output of command
     lcdPosition(display,0,0);										// Reset position of lcd cursor

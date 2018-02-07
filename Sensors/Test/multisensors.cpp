@@ -14,7 +14,7 @@
  
 int main(){
   Adafruit_VL6180X vl1 = Adafruit_VL6180X();  
-  Adafruit_VL6180X vl2 = Adafruit_VL6180X();  
+//  Adafruit_VL6180X vl2 = Adafruit_VL6180X();  
   
   VL53L0X TOF;
   TOF.init();
@@ -32,12 +32,13 @@ int main(){
 
   data_write[0] = 1<<7;
   write(mux, data_write, 1);
+/*
   if (vl2.begin()>0) 
     printf("No Sensor Found\n");
 
     data_write[0] = 1<<0;
     write(mux, data_write, 1);
-
+*/
 
 while(1) {
   data_write[0] = 1<<2;
@@ -53,7 +54,7 @@ while(1) {
   else {
     printf("TOF1 Range: "); printf("XXX   ");
   }
-
+/*
   data_write[0] = 1<<7;
   write(mux, data_write, 1);
   
@@ -66,6 +67,7 @@ while(1) {
   else {
     printf("TOF2 Range: "); printf("XXX   ");
   }
+*/
 
   data_write[0] = 1<<0;
   write(mux, data_write, 1);
