@@ -2,27 +2,24 @@
 #include <wiringPi.h>
 #include <stdint.h>
 #include <unistd.h>
-#include "Libraries/navigation.h"
+#include <fcntl.h>
+#include <linux/i2c-dev.h>
+#include <sys/ioctl.h>
 #include "Libraries/SensorLib2.h"
 
 int main()
 {
-    //Initialize MUX
-    MUX *mux = initMUX();
+    MUX *mux= initMUX();
+    TOF *tof=newTOF(1,mux,7);
 
-    	//TOF *tof0 = newTOF(1,mux,0);
-	TOF *tof1 = newTOF(0,mux,2);
-	printf("Is long range : %d\n",tof1->isLRANGE);
-	printf("Input No. %d\n",tof1->inputNo);
-	printf("Status %d\n",tof1->srange->vl->status);
+    TOF *tof2=newTOF(0,mux,3);
 
-    printf("Initalization done..\n");
-    //while(1)
-    //{
-	//int lDistance=getDistance(tof0);
-	//printf("Lrange : %d mm",lDistance);
-	int sDistance=getDistance(tof1);
-	printf("%3d\t, ",tof1->srange->range);
-	printf("Srange : %d mm\n",sDistance);
-    //}
+    printf("Initialized tof\n");
+
+    while(1) {
+        int distance = getDistance(tof);
+	printf("Lrange : %i\n\n",distance);
+	int distance2 = getDistance(tof2);
+	printf("Srange : %d\n\n",distance2);
+    }
 }

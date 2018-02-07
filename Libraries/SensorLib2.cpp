@@ -76,6 +76,9 @@ SRANGE *initVL6180X(MUX *mux,int inputNo) {
     newSRANGE->vl = Adafruit_VL6180X();
     newSRANGE->mux=mux;
     newSRANGE->inputNo=inputNo;
+
+    switchMUX(mux,inputNo);
+
     newSRANGE->vl.begin();
     return newSRANGE;
 }
@@ -88,19 +91,13 @@ SRANGE *initVL6180X(MUX *mux,int inputNo) {
  * specified by the user
  */
 uint8_t getShortRange(SRANGE *srange) {
-    if (!getMUXStatus(srange->mux)) {
-	printf("srange Mux input:%d",srange->inputNo);
-	srange->status=srange->vl.readRangeStatus();
+    switchMUX(srange->mux,srange->inputNo);
+    srange->status=srange->vl.readRangeStatus();
 
-	if (srange->status==0)
-	    srange->range=srange->vl.readRange();
-	else
-	    printf("Srange error %d cannot read range\n",srange->status);
-    }
-    else {
-	srange->range=1;
-	srange->status=1;
-    }
+    //if (srange->status==0)
+	srange->range=srange->vl.readRange();
+    /*else
+	printf("Srange error %d cannot read range\n",srange->status);*/
     return srange->range;
 }
 
@@ -232,12 +229,8 @@ uint16_t getLongRange(LRANGE *lrange) {
 
     VL53L0X_RangingMeasurementData_t RangingMeasurementData;
 	lrange->Status = VL53L0X_PerformSingleRangingMeasurement(lrange->pMyDevice,&RangingMeasurementData);
-	printf("%s",lrange->Status);
-        print_range_status(&RangingMeasurementData);
-	printf("Measured distance: %i\n\n", RangingMeasurementData.RangeMilliMeter);
-    	uint16_t distance = RangingMeasurementData.RangeMilliMeter;
 	lrange->RangingMeasurementData=&RangingMeasurementData;
-    	return distance;
+    	return RangingMeasurementData.RangeMilliMeter;
 }
 
 TOF *newTOF(int rangeType,MUX *mux,int input) {
@@ -246,7 +239,6 @@ TOF *newTOF(int rangeType,MUX *mux,int input) {
     // 		1 = long range
     if (rangeType==0)
     {
-	printf("input set for %d\n",input);
 	SRANGE *srange=initVL6180X(mux,input);
 	tof->srange=srange;
 	tof->isLRANGE=rangeType;
