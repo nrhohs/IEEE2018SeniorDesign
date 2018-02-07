@@ -389,7 +389,7 @@ int routeread()
 {
     if (gpioInitialise() < 0) return 1;       //initialize the gpio
     
-    gpioSetMode(23, PI_INPUT);                //Set pin mode
+    gpioSetMode(16, PI_INPUT);                //Set pin mode
     int maxToggles=40;
     
         int value = 1;                            //Set value to 1, receiver outputs 0 if pulse
@@ -398,7 +398,7 @@ int routeread()
         int ii = 0;
         
         while (value)
-            value = gpioRead(23);
+            value = gpioRead(16);
         
         //Get the time when pulse is detected (0 input)
         gettimeofday(&timeStart,NULL);
@@ -419,7 +419,7 @@ int routeread()
             }
             
             previousVal = value;
-            value = gpioRead(23);
+            value = gpioRead(16);
         }
 
 	char *codeStr = decodeSignal(cmdRecord,maxToggles);
