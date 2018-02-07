@@ -392,7 +392,7 @@ int routeread()
 {
     if (gpioInitialise() < 0) return 1;       //initialize the gpio
     
-    gpioSetMode(23, PI_INPUT);                //Set pin mode
+    gpioSetMode(16, PI_INPUT);                //Set pin mode
     int maxToggles=40;
     
         int value = 1;                            //Set value to 1, receiver outputs 0 if pulse
