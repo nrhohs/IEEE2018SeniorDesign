@@ -18,7 +18,7 @@
 /**************************************************************************/
 #include "wiringPi.h"
 #include <wiringPiI2C.h>
-#include "Adafruit_VL6180x.h"
+#include "Adafruit_VL6180X.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>

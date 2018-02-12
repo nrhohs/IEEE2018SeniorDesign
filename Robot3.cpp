@@ -1,8 +1,12 @@
-/*
+/******************************************************
 Robot.cpp
 This file initializes all robot sensors, displays, and
 connections, and then calls functions from the navigation
-library so that the 
+library to navigate the course
+
+Cmdline args:
+"-sensor" does not move the robot but gives a readout of all sensors
+
 ********************************************************/
 #include <stdbool.h>
 #include <stdio.h>
@@ -18,7 +22,7 @@ library so that the
 #include "Libraries/SensorLib2.h"
 
 
-int main()
+int main(int argc, char* argv[])
 {
 
     //Initializes MUX
@@ -79,6 +83,12 @@ int main()
 	*****************/
  
 	int rawcode = routeread();
+	//provides sensor readouts
+	if (string(argv[1]) == "-sensor"){
+		while(1){
+			//senor readout code
+		}
+	}
 
 	while(1){
 		//Test nav to just make it move in a box
@@ -88,7 +98,7 @@ int main()
 		stop(1000000, display);
 
 		//for future purposes
-		  
+
 		
 	}
 

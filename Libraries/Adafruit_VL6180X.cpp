@@ -21,6 +21,7 @@
 #include "Adafruit_VL6180X.h"
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <linux/i2c-dev.h>
 #include <fcntl.h>
