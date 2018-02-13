@@ -1,0 +1,14 @@
+
+
+
+
+
+.build/uno/src/MotorController.cpp : src/MotorController.ino
+	@mkdir -p .build/uno/src
+	@echo [93msrc/MotorController.ino[0m
+	@/usr/local/bin/ino preproc  -o $@ $^
+
+
+all : .build/uno/src/MotorController.cpp
+	@true
+
