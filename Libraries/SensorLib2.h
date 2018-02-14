@@ -16,7 +16,7 @@
 #include <unistd.h>
 #include "inc/vl53l0x_api.h"
 #include "inc/vl53l0x_platform.h"
-#include "RTIMULib.h"
+#include "Libraries/RTIMULib2/RTIMULib/RTIMULib.h"
 #include "Adafruit_VL6180X.h"
 
 /* I2C Expander MUX */
