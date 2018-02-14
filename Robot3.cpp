@@ -100,20 +100,43 @@ int main(int argc, char* argv[])
 		}
 	}
 
-//	while(1){
-		//Test nav to just make it move in a box
-//		fwd_waitOnTOF(30, tof0, display);
-//		stop(1000000, display);
-//		turnRight_waitOnIMU(30, imu, 90, display);
-//		stop(1000000, display);
-		sendCommand(24,0,display);
-		usleep(5000000);
-		sendCommand(23,0,display);
-		usleep(5000000);
-		//for future purposes
+	while(1){
+		/* TASK 1 */
+		if (rawcode < 4){
+			fwd_waitOnTOF(20, tof5, display, 20);
+			stop(1000000,display);
+			bwd_waitOnTOF(20, tof5, display, 485);
+		}
+		if (rawcode >= 4){
+			bwd_waitOnTOF(20, tof5, display, 660);
+			stop(1000000,display);
+			fwd_waitOnTOF(20, tof5, display, 485);
+		}
 
-		
-//	}
+		/* TRANSIT 1-->2 */
+		//Rotate 90 to go down ramp
+		turnRight_waitOnIMU(5,imu,90.0,display);
+		//Go down ramp
+		fwd_timed(20,2000000,display);
+		//Find box
+		fwd_waitOnTOF(10,tof5,559,display);
+		//Rotate 90 to orient flag mech
+		turnRight_waitOnIMU(5,imu,90.0,display);
+
+		/* TASK 2 */
+		if (rawcode%4 < 2){
+		//B button 0
+			bwd_timed(20,4000000,display);
+			stop(1000000,display);
+		}
+		else{
+		//B button 1
+			fwd_timed(20,4000000,display);
+			stop(1000000,display);
+		}
+		//for future purposes
+		  
+	}
 
 	return(0);
 }
