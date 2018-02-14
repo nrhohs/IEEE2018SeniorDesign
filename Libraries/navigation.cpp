@@ -294,5 +294,14 @@ void turnLeft_waitOnIMU(unsigned char speed, RTIMU *imu, double targetYaw, int d
     waitOnIMU(imu,'z',targetYaw);
 }
 
+void sendCommand(unsigned char command, unsigned char speed, int display) {
+    RS232_SendByte(CPORT_NR, command);
+    RS232_SendByte(CPORT_NR, speed);
+    printf("Sent to Arduino: %d, %d'\n", command, speed);
+    lcdPosition(display,0,0);
+    lcdPrintf(display,"Sent: '%3d %3d'", command, speed);
+}
+
+
 void wallFollowDrive(unsigned char speed, unsigned char direction, TOF *face, TOF *sideOne, TOF *sideTwo, RTIMU *imu, int display);
 void wallFollowStrafe(unsigned char speed, unsigned char direction, TOF *face, TOF *sideOne, TOF *sideTwo, RTIMU *imu, int display);

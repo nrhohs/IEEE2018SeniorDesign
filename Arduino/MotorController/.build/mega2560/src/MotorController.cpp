@@ -21,7 +21,7 @@ Motor M[4] =
 }; 
 
 Motor FlagWheel(5,40,41,2,3);
-//Motor Actuator(6,42,43,-1,-1);
+Motor Actuator(6,42,43,-1,-1);
               
 unsigned long lastMilli = 0;
 unsigned char incomingByte[2];
@@ -246,7 +246,7 @@ void loop() {
     }
     else if(cmd == 21){               //Spin Wheel CW     
       long start = FlagWheel.getPosition();
-      FlagWheel.setSpeed(45);
+      FlagWheel.setSpeed(40);
       FlagWheel.run(FORWARD);
       while (FlagWheel.getPosition() < start+9600) { 
       }
@@ -254,13 +254,12 @@ void loop() {
     }
     else if(cmd == 22){               //Spin Wheel CCW     
       long start = FlagWheel.getPosition();
-      FlagWheel.setSpeed(45);
+      FlagWheel.setSpeed(40);
       FlagWheel.run(BACKWARD);
       while (FlagWheel.getPosition() < start+9600) { 
       }
       FlagWheel.run(STOP);
     }
-/*
     else if(cmd == 23){               //Linear Actuator Up     
       Serial.print("UP");
       Actuator.setSpeed(255);
@@ -275,7 +274,6 @@ void loop() {
       Serial.print("STOP");
       Actuator.run(STOP);
     }
-*/
     else {                             //STOP
       for(int j=0;j<4;j++){
         M[j].run(STOP);
