@@ -20,6 +20,7 @@ Cmdline args:
 #include <softPwm.h>
 #include "Libraries/navigation.h"
 #include "Libraries/SensorLib2.h"
+#include <string.h>
 
 
 int main(int argc, char* argv[])
@@ -35,12 +36,12 @@ int main(int argc, char* argv[])
     TOF *tof2 = newTOF(0, mux, 2);	//right facing SR (back)
     TOF *tof3 = newTOF(0, mux, 3);	//back facing SR
     TOF *tof4 = newTOF(0, mux, 4);	//left facing SR  (back)
-    TOF *tof5 = newTOF(0, mux, 5);	//left facing SR  (front)
+    TOF *tof5 = newTOF(1, mux, 5);	//left facing SR  (front)
     TOF *tof6 = newTOF(1, mux, 6);	//right facing LR (box TOF)
-    TOF *tof7 = newTOF(1, mux, 7);	//front facing LR (dropoff TOF)
+//    TOF *tof7 = newTOF(1, mux, 7);	//front facing LR (dropoff TOF)
 
     //Initializes IMU
-	RTIMU *imu = imuInit();
+//	RTIMU *imu = imuInit();
     //We can make a robot object that takes in the TOF* array RTIMU* and MUX*
     //The code directly below would be moved to an InitRobot() function
     //If initialization occurs correctly a state machine can begin with the Robot
@@ -82,25 +83,37 @@ int main(int argc, char* argv[])
 	Actual Robot Start
 	*****************/
  
-	int rawcode = routeread();
+//	int rawcode = routeread();
+        int rawcode = 7;
+        printf("%s\n",argv[1]);
 	//provides sensor readouts
-	if (string(argv[1]) == "-sensor"){
+	if (strcmp(argv[1],"-sensor")==0){
 		while(1){
 			//senor readout code
+			printf("TOF0: %d  ",getDistance(tof0));
+			printf("TOF1: %d  ",getDistance(tof1));
+			printf("TOF2: %d  ",getDistance(tof2));
+			printf("TOF3: %d  ",getDistance(tof3));
+			printf("TOF4: %d  ",getDistance(tof4));
+			printf("TOF5: %d  ",getDistance(tof5));
+			printf("TOF6: %d\n",getDistance(tof6));
 		}
 	}
 
-	while(1){
+//	while(1){
 		//Test nav to just make it move in a box
-		fwd_waitOnTOF(30, tof0, display);
-		stop(1000000, display);
-		turnRight_waitOnIMU(30, imu, 90, display);
-		stop(1000000, display);
-
+//		fwd_waitOnTOF(30, tof0, display);
+//		stop(1000000, display);
+//		turnRight_waitOnIMU(30, imu, 90, display);
+//		stop(1000000, display);
+		sendCommand(24,0,display);
+		usleep(5000000);
+		sendCommand(23,0,display);
+		usleep(5000000);
 		//for future purposes
 
 		
-	}
+//	}
 
 	return(0);
 }
