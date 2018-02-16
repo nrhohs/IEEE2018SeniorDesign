@@ -21,6 +21,8 @@ Cmdline args:
 #include "Libraries/navigation.h"
 #include "Libraries/SensorLib2.h"
 
+//just testing
+#include "Libraries/RTIMULib2/RTIMULib/RTIMULib.h"
 
 int main(int argc, char* argv[])
 {
