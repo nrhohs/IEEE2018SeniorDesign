@@ -21,7 +21,7 @@ Motor M[4] =
 }; 
 
 Motor FlagWheel(5,40,41,2,3);
-Motor Actuator(6,42,43,-1,-1);
+//Motor Actuator(6,42,43,-1,-1);
               
 unsigned long lastMilli = 0;
 unsigned char incomingByte[2];
@@ -59,7 +59,6 @@ void loop() {
         M[j].run(FORWARD);
         M[j].Setpoint = Speed;
       }
-      Serial.println(cmd);
     }
     else if (cmd==2) {              //BACKWARD
       for(int j=0;j<4;j++) {
@@ -260,6 +259,7 @@ void loop() {
       }
       FlagWheel.run(STOP);
     }
+/*
     else if(cmd == 23){               //Linear Actuator Up     
       Serial.print("UP");
       Actuator.setSpeed(255);
@@ -274,6 +274,7 @@ void loop() {
       Serial.print("STOP");
       Actuator.run(STOP);
     }
+*/
     else {                             //STOP
       for(int j=0;j<4;j++){
         M[j].run(STOP);

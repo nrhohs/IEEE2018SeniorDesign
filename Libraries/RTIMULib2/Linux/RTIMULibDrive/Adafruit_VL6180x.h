@@ -17,6 +17,8 @@
 */
 /**************************************************************************/
 
+#include "wiringPi.h"
+#include <wiringPiI2C.h>
 #include <stdint.h>
 
 //#define I2C_DEBUG
@@ -64,19 +66,19 @@
 class Adafruit_VL6180X {
  public:
   Adafruit_VL6180X();
-  int begin();
-  uint8_t readRange();
+  int begin(int);
+  uint8_t readRange(int);
 //  float   readLux(uint8_t gain);
-  uint8_t readRangeStatus();
+  uint8_t readRangeStatus(int);
 
  private:
-  void loadSettings();
+  void loadSettings(int);
 
   void write8(int, uint16_t address, uint8_t data);
   void write16(int, uint16_t address, uint16_t data);
 
   uint8_t read8(int, uint16_t address);
 //  uint8_t read16(uint16_t address);
-  int fd;
+
   uint8_t _i2caddr;
 };

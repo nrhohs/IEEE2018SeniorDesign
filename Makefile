@@ -58,7 +58,7 @@ DEPS  = $(RTIMULIBPATH)/RTMath.h \
     $(RTIMULIBPATH)/IMUDrivers/RTPressureLPS25H.h \
     $(RTIMULIBPATH)/IMUDrivers/RTPressureMS5611.h \
     $(RTIMULIBPATH)/IMUDrivers/RTPressureMS5637.h \
-    $(RTIMULIBPATH)/pigpio.h \
+    Libraries/pigpio.h \
     Libraries/inc/vl53l0x_setup.h \
     Libraries/inc/vl53l0x_tuning.h \
     Libraries/inc/vl53l0x_types.h \

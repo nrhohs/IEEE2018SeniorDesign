@@ -16,6 +16,7 @@
 #include <pigpio.h>
 #include <sys/time.h>
 #include <math.h>
+#include <lcd.h>
 
 //Private Helper prototypes
 //I2C Expander
@@ -279,7 +280,7 @@ int getDistance(TOF *tof) {
 
 
 RTIMU *imuInit() {
-    RTIMUSettings *settings = new RTIMUSettings("RTIMULib");
+    RTIMUSettings *settings = new RTIMUSettings("/home/pi/IEEE2018SeniorDesign/RTIMULib");
 
     RTIMU *imu = RTIMU::createIMU(settings);
 
@@ -300,31 +301,48 @@ RTIMU *imuInit() {
     imu->setGyroEnable(true);
     imu->setAccelEnable(true);
     imu->setCompassEnable(false);
+
     return imu;
 }
 
 double getCurrImuRoll(RTIMU *imu) {
+    double roll;
+    if (imu->IMURead())
+   {
     RTIMU_DATA imuData = imu->getIMUData();
     RTVector3 vec=imuData.fusionPose;
-    double roll=vec.x() * RTMATH_RAD_TO_DEGREE;
-    printf("current:%f \n",roll);
+    roll=vec.x() * RTMATH_RAD_TO_DEGREE;
     return roll;
+    }
+    return -1;
 }
 
 double getCurrImuPitch(RTIMU *imu) {
+    double pitch;
+    if (imu->IMURead())
+    {
     RTIMU_DATA imuData = imu->getIMUData();
     RTVector3 vec=imuData.fusionPose;
-    double pitch=vec.x() * RTMATH_RAD_TO_DEGREE;
-    printf("current:%f \n",pitch);
+    pitch=vec.y() * RTMATH_RAD_TO_DEGREE;
     return pitch;
+    }
+    return -1;
 }
 
 double getCurrImuYaw(RTIMU *imu) {
+    double yaw;
+    // Poll at recommended rate
+    usleep(imu->IMUGetPollInterval() * 1000);
+
+    if (imu->IMURead())
+    {
     RTIMU_DATA imuData = imu->getIMUData();
     RTVector3 vec=imuData.fusionPose;
     double yaw=vec.z() * RTMATH_RAD_TO_DEGREE; 
-    printf("current:%f  \n",yaw);
+//    printf("yaw: %f\n",yaw);
     return yaw;
+    }
+    return -1;
 }
 
 //Private Helper methods
@@ -385,7 +403,7 @@ char *decodeSignal(cmd **cmdArr,int maxToggles) {
     return strcode;
 }
 
-int routeread()
+int routeread(int display)
 {
     if (gpioInitialise() < 0) return 1;       //initialize the gpio
     
@@ -431,6 +449,11 @@ int routeread()
 
    	int decodesStr=binaryToDecimal(codeStr);
 	printf("%d\n",decodesStr);
+
+	//Send to LCD
+	lcdPosition(display,0,1);
+	lcdPrintf(display,"Route: '%d'",decodesStr+1);
+
 	return(decodesStr);
 
 }

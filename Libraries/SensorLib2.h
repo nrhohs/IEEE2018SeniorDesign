@@ -140,6 +140,6 @@ typedef struct Command cmd;
 cmd *addCmd(int initVal, unsigned long initUSec);
 int binaryToDecimal(const char *);
 char *decodeSignal(cmd **cmdArr,int maxToggles);
-int routeread();
+int routeread(int display);
 
 #endif

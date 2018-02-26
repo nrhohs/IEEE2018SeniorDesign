@@ -1,4 +1,4 @@
-#///////////////////////////////////////////////////////////////////////////
+#////////////////////////////////////////////////////////////////////////////
 #//
 #//  This file is part of RTIMULib
 #//
@@ -54,7 +54,7 @@ OBJECTS_DIR   = objects/
 
 # Files
 
-DEPS  = $(RTIMULIBPATH)/RTMath.h \
+DEPS    = $(RTIMULIBPATH)/RTMath.h \
     $(RTIMULIBPATH)/RTIMULib.h \
     $(RTIMULIBPATH)/RTIMULibDefs.h \
     $(RTIMULIBPATH)/RTIMUHal.h \
@@ -108,8 +108,7 @@ OBJECTS = objects/RTIMULibDrive.o \
     objects/RTPressureLPS25H.o \
     objects/RTPressureMS5611.o \
     objects/RTPressureMS5637.o \
-    Adafruit_VL6180x.o \
-    rs232.o  
+    Adafruit_VL6180x.o 
      
 
 MAKE_TARGET	= RTIMULibDrive
@@ -120,7 +119,7 @@ TARGET		= Output/$(MAKE_TARGET)
 
 $(TARGET): $(OBJECTS)
 	@$(CHK_DIR_EXISTS) Output/ || $(MKDIR) Output/
-	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(LIBS) ./wiringPi/devLib/lcd.o -lwiringPi
+	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(LIBS)
 
 clean:
 	-$(DEL_FILE) $(OBJECTS)
@@ -138,15 +137,9 @@ $(OBJECTS_DIR)%.o : $(RTIMULIBPATH)/IMUDrivers/%.cpp $(DEPS)
 
 Adafruit_VL6180x.o : Adafruit_VL6180x.cpp 
 
-rs232.o : rs232.c
-
-$(OBJECTS_DIR)RTIMULibDrive.o : RTIMULibDriveCombo.cpp $(DEPS)
+$(OBJECTS_DIR)RTIMULibDrive.o : RTIMULibDriveTest.cpp $(DEPS)
 	@$(CHK_DIR_EXISTS) objects/ || $(MKDIR) objects/ 
-<<<<<<< HEAD:RTIMULib2/Linux/RTIMULibDrive/Makefile
-	$(CXX) -c -o $@ RTIMULibDriveTest.cpp $(CFLAGS) $(INCPATH) -lm -lwiringPi 
-=======
-	$(CXX) -c -o $@ RTIMULibDriveCombo.cpp $(CFLAGS) $(INCPATH) -lm -lwiringPi 
->>>>>>> master:Libraries/RTIMULib2/Linux/RTIMULibDrive/Makefile
+	$(CXX) -c -o $@ RTIMULibDriveTest.cpp $(CFLAGS) $(INCPATH) -lwiringPi
 
 # Install
 

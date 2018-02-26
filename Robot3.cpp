@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
 //    TOF *tof7 = newTOF(1, mux, 7);	//front facing LR (dropoff TOF)
 
     //Initializes IMU
-//	RTIMU *imu = imuInit();
+	RTIMU *imu = imuInit();
     //We can make a robot object that takes in the TOF* array RTIMU* and MUX*
     //The code directly below would be moved to an InitRobot() function
     //If initialization occurs correctly a state machine can begin with the Robot
@@ -82,61 +82,73 @@ int main(int argc, char* argv[])
 	/*****************
 	Actual Robot Start
 	*****************/
- 
-//	int rawcode = routeread();
-        int rawcode = 7;
-        printf("%s\n",argv[1]);
+	int rawcode = routeread(display);
+        //int rawcode = 1;
+	//int rawcode=7;
 	//provides sensor readouts
-	if (strcmp(argv[1],"-sensor")==0){
-		while(1){
-			//senor readout code
-			printf("TOF0: %d  ",getDistance(tof0));
-			printf("TOF1: %d  ",getDistance(tof1));
-			printf("TOF2: %d  ",getDistance(tof2));
-			printf("TOF3: %d  ",getDistance(tof3));
-			printf("TOF4: %d  ",getDistance(tof4));
-			printf("TOF5: %d  ",getDistance(tof5));
-			printf("TOF6: %d\n",getDistance(tof6));
+	if (argc>1){
+	    for (int i=0;i<argc;i++)
+	   {
+		if (strcmp(argv[i],"-sensor")==0){
+			while(1){
+				//senor readout code
+				printf("TOF0: %d  ",getDistance(tof0));
+				printf("TOF1: %d  ",getDistance(tof1));
+				printf("TOF2: %d  ",getDistance(tof2));
+				printf("TOF3: %d  ",getDistance(tof3));
+				printf("TOF4: %d  ",getDistance(tof4));
+				printf("TOF5: %d  ",getDistance(tof5));
+				printf("TOF6: %d  ",getDistance(tof6));
+				printf("IMU:  %f\n",getCurrImuYaw(imu));
+			}
 		}
+		else if (strcmp(argv[i],"-route")==0){
+			rawcode=argv[i+1][0]-'0';
+		}
+	    }
 	}
 
-	while(1){
-		/* TASK 1 */
+
+
 		if (rawcode < 4){
-			fwd_waitOnTOF(20, tof5, display, 20);
+			printf("run A");
+			fwd_waitOnTOF(40, tof5, display, 60);
 			stop(1000000,display);
-			bwd_waitOnTOF(20, tof5, display, 485);
+			bwd_waitOnTOF(40, tof5, display, 445);
 		}
 		if (rawcode >= 4){
-			bwd_waitOnTOF(20, tof5, display, 660);
+			printf("run B");
+			//bwd_waitOnTOF(40, tof5, display, 910);
+			bwd_waitOnTOF(40,tof2,display,60);
 			stop(1000000,display);
-			fwd_waitOnTOF(20, tof5, display, 485);
+			fwd_waitOnTOF(40, tof5, display, 545);
 		}
 
-		/* TRANSIT 1-->2 */
-		//Rotate 90 to go down ramp
-		turnRight_waitOnIMU(5,imu,90.0,display);
-		//Go down ramp
-		fwd_timed(20,2000000,display);
-		//Find box
-		fwd_waitOnTOF(10,tof5,559,display);
-		//Rotate 90 to orient flag mech
-		turnRight_waitOnIMU(5,imu,90.0,display);
 
-		/* TASK 2 */
+		//Rotate 90 to go down ramp
+		turnLeft_waitOnIMU(25,imu,90.0,display);
+
+		//Go down ramp
+		fwd_timed(10,4000000,display);
+		//Find box
+		fwd_waitOnTOF(40,tof5,display,380);
+/*
+		//Rotate 90 to orient flag mech
+		turnRight_waitOnIMU(25,imu,90.0,display);
+
 		if (rawcode%4 < 2){
 		//B button 0
-			bwd_timed(20,4000000,display);
+			bwd_waitOnTOF(40,tof2,display,110);
 			stop(1000000,display);
 		}
 		else{
 		//B button 1
-			fwd_timed(20,4000000,display);
+			fwd_watOnTOF(40,tof5,display,110);
 			stop(1000000,display);
 		}
 		//for future purposes
-		  
-	}
+*/
+	sendCommand(0,0,display);
 
 	return(0);
 }

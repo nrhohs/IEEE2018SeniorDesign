@@ -27,20 +27,41 @@ how the robot traverses the arena.
 void waitOnTOF(TOF *tof, int targetDistance)
 {
     int currDistance;
-    int targetMax=targetDistance+1;
-    int targetMin=targetDistance-1;
+    int targetMax=targetDistance+10;
+    int targetMin=targetDistance-10;
     currDistance  = getDistance(tof);
+    if (targetDistance-currDistance>=0)
+	//max range limit
+    {
+	while (currDistance < targetMin)
+	{
+	    currDistance = getDistance(tof);
+	    printf("TOF%d current dist: %d\n",tof->inputNo,currDistance);
+	}
+    }
+    else
+	// min range limit
+    {
+	while (currDistance > targetMax)
+	{
+	    currDistance = getDistance(tof);
+	    printf("TOF%d current dist: %d\n",tof->inputNo,currDistance);
+	}
+    }
+   /* 
     while (currDistance < targetMin || currDistance > targetMax)
     {
         currDistance  = getDistance(tof);
+	//printf("distance: %d\n",currDistance);
     }
+    */
     return;
 }
 
 void waitOnIMU(RTIMU *imu, char axis, double targetDegree)
 {
     double current=0.0f;
-    double stopTarget=fmod((current+targetDegree),360.0);
+    double stopTarget=0.0f;
     switch (axis)
     {
 	case 'x':
@@ -56,10 +77,32 @@ void waitOnIMU(RTIMU *imu, char axis, double targetDegree)
 	    printf("Invalid axis");
 	    return;
     }
-    stopTarget=fmod((current+targetDegree),360.0);
-    double stopTargetMin=fmod((stopTarget+360.0),360.0) - 1.0;
-    double stopTargetMax=fmod((stopTarget+360.0),360.0) + 1.0;
-    while (current < stopTargetMin || current > stopTargetMax)
+    printf("\n Current Position: %c %f\n",axis,current);
+    stopTarget=fmod((current+targetDegree+360),360.0);
+    printf("\n Stop Target: %c %f\n",axis,stopTarget);
+    double stopTargetMin=fmod(((stopTarget-5)+360.0),360.0);
+    double stopTargetMax=fmod((stopTarget),360.0) + 5.0;
+    if (stopTarget-current > 0)
+    {
+	while (current <= stopTarget || current==-1)
+	{
+    	switch (axis)
+    	{
+	    case 'x':
+	    	current=getCurrImuRoll(imu);
+	    	break;
+	    case 'y':
+	    	current=getCurrImuPitch(imu);
+	    	break;
+	    case 'z':
+	    	current=getCurrImuYaw(imu);
+	        break;
+        }
+	}
+    }
+    else
+    {
+    while (current >= stopTargetMax || current==-1)
     {
     	switch (axis)
     	{
@@ -73,6 +116,8 @@ void waitOnIMU(RTIMU *imu, char axis, double targetDegree)
 	    	current=getCurrImuYaw(imu);
 	        break;
         }
+//		printf("current Yaw %f",current);
+    }
     }
     return;
 }
@@ -157,6 +202,7 @@ void bwd_waitOnTOF(unsigned char speed, TOF *sensor, int display, int target) {
     printf("Sent to Arduino: 'BWD at %d'\n", speed);
     lcdPosition(display,0,0);
     lcdPrintf(display,"Sent: '%3d %3d'", direction, speed);
+    printf("TESTING");
     if (target==100)
     	waitOnTOF(sensor);
     else
@@ -291,7 +337,7 @@ void turnLeft_waitOnIMU(unsigned char speed, RTIMU *imu, double targetYaw, int d
     printf("Sent to Arduino: 'TURN LEFT at %d'\n", speed);
     lcdPosition(display,0,0);
     lcdPrintf(display,"Sent: '%3d %3d'", direction, speed);
-    waitOnIMU(imu,'z',targetYaw);
+    waitOnIMU(imu,'z',(-1)*targetYaw);
 }
 
 void sendCommand(unsigned char command, unsigned char speed, int display) {

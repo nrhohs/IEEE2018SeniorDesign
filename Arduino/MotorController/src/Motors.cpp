@@ -63,6 +63,7 @@ void Motor::updatePID() {
   }
 */
   setSpeed(MPWM);
+  Serial.println(MPWM);
 }
 
 

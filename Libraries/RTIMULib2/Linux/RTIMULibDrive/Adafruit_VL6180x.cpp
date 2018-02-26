@@ -1,4 +1,4 @@
-/*************************************************************************/
+/**************************************************************************/
 /*! 
     @file     Adafruit_VL6180X.cpp
     @author   Limor Fried (Adafruit Industries)
@@ -21,13 +21,11 @@
 #include "Adafruit_VL6180x.h"
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdlib.h>
 #include <stdio.h>
 #include <linux/i2c-dev.h>
 #include <fcntl.h>
 #include <sys/syscall.h>
 #include <unistd.h>
-#include <sys/ioctl.h>
 
 
 
@@ -44,11 +42,11 @@ Adafruit_VL6180X::Adafruit_VL6180X(void) {
     @brief  Setups the HW
 */
 /**************************************************************************/
-int Adafruit_VL6180X::begin() {
+int Adafruit_VL6180X::begin(int device) {
   _i2caddr = VL6180X_DEFAULT_I2C_ADDR;
-  fd = -1;
+  int fd = -1;
   char buf[15];
-  snprintf(buf,15,"/dev/i2c-1");
+  snprintf(buf,15,"/dev/i2c-%d",device);
   if ((fd=open(buf,O_RDWR))<0){
     return -2;
   }
@@ -62,7 +60,7 @@ int Adafruit_VL6180X::begin() {
   }
 
   //if (read8(fd,VL6180X_REG_SYSTEM_FRESH_OUT_OF_RESET) == 0x01) {
-    loadSettings();
+    loadSettings(fd);
   //}
 
   write8(fd,VL6180X_REG_SYSTEM_FRESH_OUT_OF_RESET, 0x00);
@@ -76,7 +74,7 @@ int Adafruit_VL6180X::begin() {
 */
 /**************************************************************************/
 
-void Adafruit_VL6180X::loadSettings() {
+void Adafruit_VL6180X::loadSettings(int fd) {
     // load settings!
 
     // private settings from page 24 of app note
@@ -143,15 +141,15 @@ void Adafruit_VL6180X::loadSettings() {
 */
 /**************************************************************************/
 
-uint8_t Adafruit_VL6180X::readRange() {
+uint8_t Adafruit_VL6180X::readRange(int fd) {
   // wait for device to be ready for range measurement
-//  while (! (read8(fd,VL6180X_REG_RESULT_RANGE_STATUS) & 0x01));
+  while (! (read8(fd,VL6180X_REG_RESULT_RANGE_STATUS) & 0x01));
 
   // Start a range measurement
   write8(fd,VL6180X_REG_SYSRANGE_START, 0x01);
 
   // Poll until bit 2 is set
-//  while (! (read8(fd,VL6180X_REG_RESULT_INTERRUPT_STATUS_GPIO) & 0x04));
+  while (! (read8(fd,VL6180X_REG_RESULT_INTERRUPT_STATUS_GPIO) & 0x04));
 
   // read range in mm
   uint8_t range = read8(fd,VL6180X_REG_RESULT_RANGE_VAL);
@@ -169,7 +167,7 @@ uint8_t Adafruit_VL6180X::readRange() {
 */
 /**************************************************************************/
 
-uint8_t Adafruit_VL6180X::readRangeStatus() {
+uint8_t Adafruit_VL6180X::readRangeStatus(int fd) {
   return (read8(fd,VL6180X_REG_RESULT_RANGE_STATUS) >> 4);
 }
 
