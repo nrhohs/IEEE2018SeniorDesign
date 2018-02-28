@@ -57,13 +57,11 @@ void Motor::updatePID() {
   MPWM = constrain(int(MPWM+Output),0,255);
   if (Setpoint==0) 
     MPWM=0; 
-/*
-  if (PWMpin==8) { 
-    Serial.print("NewMPWM:"); Serial.print(MPWM); Serial.println("  ");
-  }
-*/
+//  if (PWMpin==8) { 
+//    Serial.print("NewMPWM:"); Serial.print(MPWM); Serial.println("  ");
+//  }
   setSpeed(MPWM);
-  Serial.println(MPWM);
+//  Serial.println(MPWM);
 }
 
 

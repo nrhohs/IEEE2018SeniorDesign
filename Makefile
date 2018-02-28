@@ -123,6 +123,10 @@ $(TARGET): $(OBJECTS)
 	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(LIBS) -std=c++11 ./Libraries/wiringPi/devLib/lcd.o -lwiringPi -pthread -lrt -lpigpio
 
 clean:
+	-$(DEL_FILE) objects/Robot.o, objects/navigation.o, objects/SensorLib2.o
+	-$(DEL_FILE) *~ core *.core
+
+cleanall:
 	-$(DEL_FILE) $(OBJECTS)
 	-$(DEL_FILE) *~ core *.core
 

@@ -38,16 +38,18 @@ void setup() {
 
 void loop() {
 
-  if((millis()-lastMilli) >= LOOPTIME) {
-    lastMilli = millis();
     
     if (Serial.available()>0) {   
       incomingByte[0]=Serial.read();
+      delay(10);
       incomingByte[1]=Serial.read(); 
+      delay(10);
     } 
    
     int cmd = incomingByte[0];
     int Speed = incomingByte[1];
+//    int cmd = 22;
+//    int Speed = 0;
     if (cmd==0) {                   //STOP
       for(int j=0;j<4;j++) {
         M[j].run(STOP);
@@ -71,7 +73,10 @@ void loop() {
       M[1].run(FORWARD);
       M[2].run(BACKWARD);
       M[3].run(FORWARD);
-      for(int j=0;j<4;j++) {
+      for(int j=1;j<4;j+=2) {
+        M[j].Setpoint = Speed;
+      }   
+      for(int j=0;j<4;j+=2) {
         M[j].Setpoint = Speed;
       }   
     }       
@@ -80,9 +85,17 @@ void loop() {
       M[1].run(BACKWARD);
       M[2].run(FORWARD);
       M[3].run(BACKWARD);
-      for(int j=0;j<4;j++) {
+      for(int j=1;j<4;j+=2) {
         M[j].Setpoint = Speed;
       }   
+      for(int j=0;j<4;j+=2) {
+        M[j].Setpoint = Speed;
+      }   
+/*
+      for(int j=0;j<4;j++) {
+        M[j].setSpeed(Speed);
+      }   
+*/
     }  
     else if (cmd==5) {                //Turn Right
       M[0].run(BACKWARD);
@@ -237,17 +250,17 @@ void loop() {
     }
     else if(cmd == 19){               //Arc (Right / Left Backwards)     
       M[1].Setpoint += Speed;         //Increase speed of right motors 
-      M[2].Setpoint += Speed;
+      M[3].Setpoint += Speed;
     }
     else if(cmd == 20){               //Arc (Left / Right Backwards)     
-      M[0].Setpoint += Speed;         //Increase speed of right motors 
-      M[4].Setpoint += Speed;
+      M[1].Setpoint = Speed;         //Increase speed of right motors 
+      M[3].Setpoint = Speed;
     }
     else if(cmd == 21){               //Spin Wheel CW     
       long start = FlagWheel.getPosition();
       FlagWheel.setSpeed(40);
       FlagWheel.run(FORWARD);
-      while (FlagWheel.getPosition() < start+9600) { 
+      while (FlagWheel.getPosition() > start-9600) { 
       }
       FlagWheel.run(STOP);
     }
@@ -283,7 +296,8 @@ void loop() {
     }    
 
  
-   
+  if((millis()-lastMilli) >= LOOPTIME) {
+    lastMilli = millis();
     for(int j=0;j<4;j++) {
       M[j].updatePID();
     }  

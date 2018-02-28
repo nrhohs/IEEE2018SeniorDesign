@@ -1,11 +1,10 @@
-/******************************************************
-Robot.cpp
-This file initializes all robot sensors, displays, and
-connections, and then calls functions from the navigation
+/***********************************************************
 library to navigate the course
 
 Cmdline args:
 "-sensor" does not move the robot but gives a readout of all sensors
+"-route" follwed by a space and a number hardcodes an IR route
+    * Valid routes are 1 - 8.
 
 ********************************************************/
 #include <stdbool.h>
@@ -21,10 +20,21 @@ Cmdline args:
 #include "Libraries/navigation.h"
 #include "Libraries/SensorLib2.h"
 #include <string.h>
+#include <pigpio.h>
 
+void correctAngle(RTIMU *,int,double);
 
 int main(int argc, char* argv[])
 {
+    //Stop robot on Exit
+    std::atexit(stopExit);
+
+    //    printf("%d, %s, %s", argc, argv[0], argv[1]);
+    //Initialize Stop Switch
+    if(gpioInitialise()<0) return 1;
+    gpioSetMode(21, PI_INPUT);
+    gpioSetPullUpDown(21, PI_PUD_UP);
+//    gpioSetISRFunc(21, FALLING_EDGE, -1, STOPISR);
 
     //Initializes MUX
     MUX *mux = initMUX();
@@ -33,8 +43,8 @@ int main(int argc, char* argv[])
     //Let's create an array of TOF's so that we can pass them to a function	
     TOF *tof0 = newTOF(0, mux, 0);	//front facing SR
     TOF *tof1 = newTOF(0, mux, 1);	//right facing SR (front)
-    TOF *tof2 = newTOF(0, mux, 2);	//right facing SR (back)
-    TOF *tof3 = newTOF(0, mux, 3);	//back facing SR
+    TOF *tof2 = newTOF(1, mux, 2);	//right facing SR (back)
+    TOF *tof3 = newTOF(1, mux, 3);	//back facing SR
     TOF *tof4 = newTOF(0, mux, 4);	//left facing SR  (back)
     TOF *tof5 = newTOF(1, mux, 5);	//left facing SR  (front)
     TOF *tof6 = newTOF(1, mux, 6);	//right facing LR (box TOF)
@@ -82,13 +92,12 @@ int main(int argc, char* argv[])
 	/*****************
 	Actual Robot Start
 	*****************/
-	int rawcode = routeread(display);
-        //int rawcode = 1;
+
+        int rawcode = 0;
 	//int rawcode=7;
 	//provides sensor readouts
 	if (argc>1){
-	    for (int i=0;i<argc;i++)
-	   {
+	   for (int i=0;i<argc;i++) {
 		if (strcmp(argv[i],"-sensor")==0){
 			while(1){
 				//senor readout code
@@ -105,49 +114,179 @@ int main(int argc, char* argv[])
 		else if (strcmp(argv[i],"-route")==0){
 			rawcode=argv[i+1][0]-'0';
 		}
+		else if (strcmp(argv[i],"-pid")==0){
+			strafeRight_waitOnTOF(60,tof3,display,200);
+			stop(50000,display);
+       			if(getCurrImuYaw(imu)<180)
+  				turnLeft_waitOnIMU(20,imu,0.0,display,true);
+       			else
+  				turnRight_waitOnIMU(20,imu,0.0,display,true);
+			stop(50000,display);
+			fwd_waitTOFwIMU(25,imu,0.0,tof5,300,display);
+			bwd_waitTOFwIMU(10,imu,0.0,tof6,200,display);
+			stop(50000,display);
+			strafeRight_waitOnTOF(30,tof3,display,290);
+			stop(50000,display);
+			return 0;
+
+			/*
+			stop(50000,display);
+			strafeRight_waitOnTOF(30,tof4,display,60);
+       			if(getCurrImuYaw(imu)<180)
+  				turnLeft_waitOnIMU(20,imu,0.0,display,true);
+       			else
+  				turnRight_waitOnIMU(20,imu,0.0,display,true);
+	
+			fwd_waitOnTOF(60,tof5,display,200);
+			strafeRight_waitOnTOF(30,tof3,display,180);
+
+       			if(getCurrImuYaw(imu)<180)
+  				turnLeft_waitOnIMU(20,imu,0.0,display,true);
+       			else
+  				turnRight_waitOnIMU(20,imu,0.0,display,true);
+			bwd_waitTOFwIMU(10,imu,0.0,tof6,200,display);
+
+			return 0;
+			while(1) {
+				strafeRight_waitOnTOF(30,tof6,display,300);
+				stop(50000,display);
+				strafeLeft_waitOnTOF(30,tof4,display,100);
+				stop(50000,display);
+			}
+			*/
+		}
 	    }
+	}
+	else {
+		rawcode = routeread(display);
+	}
+
+				printf("TOF0: %d  ",getDistance(tof0));
+				printf("TOF1: %d  ",getDistance(tof1));
+				printf("TOF2: %d  ",getDistance(tof2));
+				printf("TOF3: %d  ",getDistance(tof3));
+				printf("TOF4: %d  ",getDistance(tof4));
+				printf("TOF5: %d  ",getDistance(tof5));
+				printf("TOF6: %d  ",getDistance(tof6));
+				printf("IMU:  %f\n",getCurrImuYaw(imu));
+
+	stop(50000,display);
+
+	if (rawcode < 4){
+            printf("run A");
+            fwd_waitOnTOF(75, tof5, display, 85);
+	    stop(1000000,display);
+	    bwd_waitOnTOF(75, tof5, display, 400 );
+	}
+	else{
+	    printf("run B");
+	    bwd_waitOnTOF(75,tof2,display,85);
+	    stop(1000000,display);
+	    fwd_waitOnTOF(75, tof2, display, 400);
 	}
 
 
+	//Rotate 90 to go down ramp
+	//turnLeft_waitOnIMU(25,imu,90.0,display);
+	turnLeft_waitOnIMU(75,imu,80.0,display,false);
+	stop(500000,display);
 
-		if (rawcode < 4){
-			printf("run A");
-			fwd_waitOnTOF(40, tof5, display, 60);
-			stop(1000000,display);
-			bwd_waitOnTOF(40, tof5, display, 445);
-		}
-		if (rawcode >= 4){
-			printf("run B");
-			//bwd_waitOnTOF(40, tof5, display, 910);
-			bwd_waitOnTOF(40,tof2,display,60);
-			stop(1000000,display);
-			fwd_waitOnTOF(40, tof5, display, 545);
-		}
+	//Go down ramp
+	fwd_timed(30,5000000,display);
+	stop(1000000,display);
+
+       	if(getCurrImuYaw(imu)>270)
+  		turnLeft_waitOnIMU(20,imu,270.0,display,true);
+       	else
+  		turnRight_waitOnIMU(20,imu,270.0,display,true);
+
+	//Find box
+	fwd_waitOnTOF(75,tof5,display,400);
+	stop(500000,display);
 
 
-		//Rotate 90 to go down ramp
-		turnLeft_waitOnIMU(25,imu,90.0,display);
+	//Rotate 90 to orient flag mech
+	turnRight_waitOnIMU(75,imu,0.0,display,true);
+        if(getCurrImuYaw(imu)<180)
+	  turnLeft_waitOnIMU(30,imu,0.0,display,true);
+        else
+	  turnRight_waitOnIMU(30,imu,0.0,display,true);
+	if (rawcode%4 < 2){
+	//B button 0
+	/************ Destination B *************************/
+		bwd_waitOnTOF(50,tof2,display,160);
+		stop(1000000,display);
+		fwd_timed(40,800000,display);
+		stop(1000000,display);
+       		if(getCurrImuYaw(imu)<180)
+	  		turnLeft_waitOnIMU(20,imu,0.0,display,true);
+        	else
+	  		turnRight_waitOnIMU(20,imu,0.0,display,true);
 
-		//Go down ramp
-		fwd_timed(10,4000000,display);
-		//Find box
-		fwd_waitOnTOF(40,tof5,display,380);
-/*
-		//Rotate 90 to orient flag mech
-		turnRight_waitOnIMU(25,imu,90.0,display);
+	/***************** Flag Wheel **************************/
 
-		if (rawcode%4 < 2){
-		//B button 0
-			bwd_waitOnTOF(40,tof2,display,110);
-			stop(1000000,display);
-		}
-		else{
-		//B button 1
-			fwd_watOnTOF(40,tof5,display,110);
-			stop(1000000,display);
-		}
-		//for future purposes
-*/
+		strafeLeft_waitOnTOF(100,tof4,display,100);
+		stop(1000000,display);
+
+       		if(getCurrImuYaw(imu)<180)
+	  		turnLeft_waitOnIMU(20,imu,0.0,display,true);
+        	else
+	  		turnRight_waitOnIMU(20,imu,0.0,display,true);
+	//	if(getDistance(tof2)>60)
+	//		bwd_waitOnTOF(60,tof2,display,60);
+		stop(100000,display);
+
+		//fwd_waitOnTOF(5,tof0,display,100);
+		//Try w/ IMU correct
+		fwd_waitTOFwIMU(5,imu,0.0,tof0,100,display);
+		stop(10000,display);
+		strafeLeft_waitOnTOF(60,tof4,display,15);
+		stop(100000,display);
+
+		sendCommand(22,50,display);
+	}
+	else{
+	//B button 1
+	/****************** Destination B ***********************/
+		fwd_waitOnTOF(75,tof5,display,150);
+		stop(500000,display);
+		bwd_timed(40,800000,display);
+		stop(1000000,display);
+       		if(getCurrImuYaw(imu)<180)
+	  		turnLeft_waitOnIMU(40,imu,0.0,display,true);
+        	else
+	  		turnRight_waitOnIMU(40,imu,0.0,display,true);
+
+	/***************** Flag Wheel **************************/
+		strafeLeft_waitOnTOF(100,tof4,display,100);
+		stop(1000000,display);
+       		if(getCurrImuYaw(imu)<180)
+	  		turnLeft_waitOnIMU(20,imu,0.0,display,true);
+        	else
+	  		turnRight_waitOnIMU(20,imu,0.0,display,true);
+		stop(100000,display);
+
+		//bwd_waitOnTOF(5,tof1,display,100);
+		//Try w/ IMU correct
+		bwd_waitTOFwIMU(5,imu,0.0,tof1,100,display);
+		stop(100000,display);
+		strafeLeft_waitOnTOF(60,tof4,display,15);
+		stop(100000,display);
+
+		stop(500000,display);
+		sendCommand(22,50,display);
+	}
+
+	strafeRight_waitOnTOF(60,tof4,display,40);
+       	if(getCurrImuYaw(imu)<180)
+  		turnLeft_waitOnIMU(20,imu,0.0,display,true);
+       	else
+  		turnRight_waitOnIMU(20,imu,0.0,display,true);
+	
+	bwd_waitOnTOF(15,tof2,display,420);
+	strafeRight_waitOnTOF(60,tof6,display,50);
+	
+	//for future purposes
 	sendCommand(0,0,display);
 
 	return(0);

@@ -95,10 +95,10 @@ uint8_t getShortRange(SRANGE *srange) {
     switchMUX(srange->mux,srange->inputNo);
     srange->status=srange->vl.readRangeStatus();
 
-    //if (srange->status==0)
+//    if (srange->status==0)
 	srange->range=srange->vl.readRange();
-    /*else
-	printf("Srange error %d cannot read range\n",srange->status);*/
+    if (srange->status!=0)
+	printf("\nSrange error %d cannot read range\n",srange->status);
     return srange->range;
 }
 
@@ -166,10 +166,23 @@ VL53L0X_Error calibrateSingleMeasure(LRANGE *lrange)
 			VL53L0X_CHECKENABLE_RANGE_IGNORE_THRESHOLD,
 			(FixPoint1616_t)(1.5*0.023*65536));
     }
+
+/*
+    if (lrange->Status == VL53L0X_ERROR_NONE) {
+	lrange->Status = VL53L0X_SetLimitCheckEnable(lrange->pMyDevice,
+			VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE,
+			(FixPoint1616_t)(0.1*65536));
+    }
+    if (lrange->Status == VL53L0X_ERROR_NONE) {
+	lrange->Status = VL53L0X_SetLimitCheckEnable(lrange->pMyDevice,
+			VL53L0X_CHECKENABLE_SIGMA_FINAL_RANGE,
+			(FixPoint1616_t)(60*65536));
+    }
+*/
 			
 	
     if (lrange->Status == VL53L0X_ERROR_NONE) {
-        lrange->Status = VL53L0X_SetMeasurementTimingBudgetMicroSeconds(lrange->pMyDevice, 200000);
+        lrange->Status = VL53L0X_SetMeasurementTimingBudgetMicroSeconds(lrange->pMyDevice, 330000);
 	}
 	
     if (lrange->Status == VL53L0X_ERROR_NONE) {
@@ -231,7 +244,14 @@ uint16_t getLongRange(LRANGE *lrange) {
     VL53L0X_RangingMeasurementData_t RangingMeasurementData;
 	lrange->Status = VL53L0X_PerformSingleRangingMeasurement(lrange->pMyDevice,&RangingMeasurementData);
 	lrange->RangingMeasurementData=&RangingMeasurementData;
-    	return RangingMeasurementData.RangeMilliMeter;
+	if(lrange->Status == VL53L0X_ERROR_NONE) {
+	  uint16_t range = RangingMeasurementData.RangeMilliMeter;
+	  return range;
+	}
+	else {
+		print_range_status(lrange);
+		return -1;
+	}
 }
 
 TOF *newTOF(int rangeType,MUX *mux,int input) {
@@ -405,7 +425,7 @@ char *decodeSignal(cmd **cmdArr,int maxToggles) {
 
 int routeread(int display)
 {
-    if (gpioInitialise() < 0) return 1;       //initialize the gpio
+//    if (gpioInitialise() < 0) return 1;       //initialize the gpio
     
     gpioSetMode(16, PI_INPUT);                //Set pin mode
     int maxToggles=40;
@@ -453,7 +473,7 @@ int routeread(int display)
 	//Send to LCD
 	lcdPosition(display,0,1);
 	lcdPrintf(display,"Route: '%d'",decodesStr+1);
-
+//	gpioTerminate();
 	return(decodesStr);
 
 }

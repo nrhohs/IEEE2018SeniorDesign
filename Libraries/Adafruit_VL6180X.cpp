@@ -61,9 +61,9 @@ int Adafruit_VL6180X::begin() {
     return -1;
   }
 
-  //if (read8(fd,VL6180X_REG_SYSTEM_FRESH_OUT_OF_RESET) == 0x01) {
+  if (read8(fd,VL6180X_REG_SYSTEM_FRESH_OUT_OF_RESET) == 0x01) {
     loadSettings();
-  //}
+  }
 
   write8(fd,VL6180X_REG_SYSTEM_FRESH_OUT_OF_RESET, 0x00);
 
@@ -145,13 +145,13 @@ void Adafruit_VL6180X::loadSettings() {
 
 uint8_t Adafruit_VL6180X::readRange() {
   // wait for device to be ready for range measurement
-//  while (! (read8(fd,VL6180X_REG_RESULT_RANGE_STATUS) & 0x01));
+  while (! (read8(fd,VL6180X_REG_RESULT_RANGE_STATUS) & 0x01));
 
   // Start a range measurement
   write8(fd,VL6180X_REG_SYSRANGE_START, 0x01);
 
   // Poll until bit 2 is set
-//  while (! (read8(fd,VL6180X_REG_RESULT_INTERRUPT_STATUS_GPIO) & 0x04));
+  while (! (read8(fd,VL6180X_REG_RESULT_INTERRUPT_STATUS_GPIO) & 0x04));
 
   // read range in mm
   uint8_t range = read8(fd,VL6180X_REG_RESULT_RANGE_VAL);

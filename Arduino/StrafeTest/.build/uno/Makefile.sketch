@@ -1,0 +1,14 @@
+
+
+
+
+
+.build/uno/src/StrafeTest.cpp : src/StrafeTest.ino
+	@mkdir -p .build/uno/src
+	@echo [93msrc/StrafeTest.ino[0m
+	@/usr/local/bin/ino preproc  -o $@ $^
+
+
+all : .build/uno/src/StrafeTest.cpp
+	@true
+

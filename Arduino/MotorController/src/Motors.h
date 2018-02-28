@@ -13,9 +13,9 @@
 
 #define LOOPTIME    100
 
-#define Kp          0.25
+#define Kp          0.3
 #define Ki          0.05
-#define Kd          0.025
+#define Kd          0.15
 
 class Motor
 {
