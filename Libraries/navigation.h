@@ -49,5 +49,7 @@ void stopExit();
 void turnBackLeft_waitOnIMU(unsigned char speed, RTIMU *imu, double targetYaw, int display, bool isAbsolute);
 void turnBackRight_waitOnIMU(unsigned char speed, RTIMU *imu, double targetYaw, int display, bool isAbsolute);
 
+void turn_IMUcorrection(RTIMU *imu, double angle, int display);
+
 void wallFollowDrive(unsigned char speed, unsigned char direction, TOF *face, TOF *sideOne, TOF *sideTwo, RTIMU *imu, int display);
 void wallFollowStrafe(unsigned char speed, unsigned char direction, TOF *face, TOF *sideOne, TOF *sideTwo, RTIMU *imu, int display);

@@ -1,4 +1,4 @@
-/***********************************************************
+/**********************************************************
   library to navigate the course
 
   Cmdline args:
@@ -29,12 +29,17 @@ int main(int argc, char* argv[])
 	//Stop robot on Exit
 	std::atexit(stopExit);
 
-	//    printf("%d, %s, %s", argc, argv[0], argv[1]);
-	//Initialize Stop Switch
+	//printf("%d, %s, %s", argc, argv[0], argv[1]);
+	
+	//Initialize gpio
 	if(gpioInitialise()<0) return 1;
+
+	//Initialize Stop Switch
+	/*Stop Switch Not Implemented Yet (future)
 	gpioSetMode(21, PI_INPUT);
 	gpioSetPullUpDown(21, PI_PUD_UP);
-	//    gpioSetISRFunc(21, FALLING_EDGE, -1, STOPISR);
+	gpioSetISRFunc(21, FALLING_EDGE, -1, STOPISR);
+	*/
 
 	//Initializes MUX
 	MUX *mux = initMUX();
@@ -104,7 +109,7 @@ int main(int argc, char* argv[])
 					printf("TOF4: %d  ",getDistance(tof4));
 					printf("TOF5: %d  ",getDistance(tof5));
 					printf("TOF6: %d  ",getDistance(tof6));
-					printf("IMU:  %f\n",getCurrImuYaw(imu));
+					printf("IMU:  %f,%f\n",getCurrImuYaw(imu),getCurrImuPitch(imu));
 				}
 			}
 			//Hardcode the route from user input
@@ -115,45 +120,20 @@ int main(int argc, char* argv[])
 			//Currently (3/20/2018) being used as a debugging flag
 			//for the latter stages of Robot testing
 			else if (strcmp(argv[i],"-pid")==0){
-				strafeRight_waitOnTOF(60,tof3,display,200);
-				stop(50000,display);
-				if(getCurrImuYaw(imu)<180)
-					turnLeft_waitOnIMU(20,imu,0.0,display,true);
-				else
-					turnRight_waitOnIMU(20,imu,0.0,display,true);
-				stop(50000,display);
-				fwd_waitTOFwIMU(25,imu,0.0,tof5,300,display);
-				bwd_waitTOFwIMU(10,imu,0.0,tof6,200,display);
-				stop(50000,display);
-				strafeRight_waitOnTOF(30,tof3,display,290);
-				stop(50000,display);
+
+				sendCommand(23,40,display);
+				sendCommand(24,40,display);
 				return 0;
-
-				/*
-				   stop(50000,display);
-				   strafeRight_waitOnTOF(30,tof4,display,60);
-				   if(getCurrImuYaw(imu)<180)
-				   turnLeft_waitOnIMU(20,imu,0.0,display,true);
-				   else
-				   turnRight_waitOnIMU(20,imu,0.0,display,true);
-
-				   fwd_waitOnTOF(60,tof5,display,200);
-				   strafeRight_waitOnTOF(30,tof3,display,180);
-
-				   if(getCurrImuYaw(imu)<180)
-				   turnLeft_waitOnIMU(20,imu,0.0,display,true);
-				   else
-				   turnRight_waitOnIMU(20,imu,0.0,display,true);
-				   bwd_waitTOFwIMU(10,imu,0.0,tof6,200,display);
-
-				   return 0;
-				   while(1) {
-				   strafeRight_waitOnTOF(30,tof6,display,300);
-				   stop(50000,display);
-				   strafeLeft_waitOnTOF(30,tof4,display,100);
-				   stop(50000,display);
-				   }
-				   */
+				//Actuator Test
+/*
+				turnRight_waitOnIMU(75,imu,90.0,display,true);
+				fwd_waitTOFwIMU(30,imu,90.0,tof5,300,display);
+				fwd_waitOnIMU(200,imu,'y',10.0,display);
+				fwd_waitOnTOF(100,tof5,display,500);
+				stop(1000000,display);
+				turnLeft_waitOnIMU(75,imu,0.0,display,true);
+				fwd_waitOnTOF(50,tof5,display,85);
+				return 0;*/
 			}
 		}
 	}
@@ -175,78 +155,69 @@ int main(int argc, char* argv[])
 
 	stop(50000,display);
 
-/*----------------------First Task, Go to Button on Top of Ramp--------------------*/	
+	/*----------------------First Task, Go to Button on Top of Ramp--------------------*/	
 	if (rawcode < 4){
 		printf("run A");
-		fwd_waitOnTOF(75, tof5, display, 85);
+		fwd_waitOnTOF(55, tof5, display, 85);
 		stop(1000000,display);
-		bwd_waitOnTOF(75, tof5, display, 400 );
+		bwd_waitOnTOF(55, tof5, display, 415);
+
 	}
 	else{
 		printf("run B");
-		bwd_waitOnTOF(75,tof2,display,85);
+		bwd_waitOnTOF(55,tof2,display,85);
 		stop(1000000,display);
-		fwd_waitOnTOF(75, tof2, display, 400);
+		fwd_waitOnTOF(55, tof2, display, 415);
 	}
+	/*----------------------First Task, Go to Button on Top of Ramp--------------------*/	
 
-
-/*----------------------First Task, Go to Button on Top of Ramp--------------------*/	
-
-/*------------Second Task, Go Down Ramp, Then Press button on main arena----------*/	
+	/*------------Second Task, Go Down Ramp, Then Press button on main arena----------*/	
 	//Rotate 90 to go down ramp
-	turnLeft_waitOnIMU(75,imu,80.0,display,false);
+	turnLeft_waitOnIMU(75,imu,85.0,display,false);
 	stop(500000,display);
 
 	//Go down ramp
 	fwd_timed(30,5000000,display);
-	stop(1000000,display);
+	stop(2000000,display);
 
 	//Reorient the Robot 
-	if(getCurrImuYaw(imu)>270)
-		turnLeft_waitOnIMU(20,imu,270.0,display,true);
-	else
-		turnRight_waitOnIMU(20,imu,270.0,display,true);
+	turn_IMUcorrection(imu,270.0,display);
 
 	//Go forward until box is found
 	fwd_waitOnTOF(75,tof5,display,400);
 	stop(500000,display);
+	//go backward for brief time
+	bwd_timed(40,1000000,display);
 
 
 	//Rotate 90 to orient flag mech
 	turnRight_waitOnIMU(75,imu,0.0,display,true);
-	if(getCurrImuYaw(imu)<180)
-		turnLeft_waitOnIMU(30,imu,0.0,display,true);
-	else
-		turnRight_waitOnIMU(30,imu,0.0,display,true);
+	stop(500000,display);
+	turn_IMUcorrection(imu,0.0,display);
+
 	if (rawcode%4 < 2){
 		//B button 0
 		/************ Destination B *************************/
 		bwd_waitOnTOF(50,tof2,display,160);
 		stop(1000000,display);
-		fwd_timed(40,800000,display);
+
+		fwd_timed(40,900000,display);
 		stop(1000000,display);
-		if(getCurrImuYaw(imu)<180)
-			turnLeft_waitOnIMU(20,imu,0.0,display,true);
-		else
-			turnRight_waitOnIMU(20,imu,0.0,display,true);
+
+		turn_IMUcorrection(imu,0.0,display);
 
 		/***************** Flag Wheel **************************/
 
-		strafeLeft_waitOnTOF(100,tof4,display,100);
+		printf("\n-------------Going into Flag Wheel----------\n");
+		strafeLeft_waitOnTOF(100,tof4,display,80);
 		stop(1000000,display);
 
-		if(getCurrImuYaw(imu)<180)
-			turnLeft_waitOnIMU(20,imu,0.0,display,true);
-		else
-			turnRight_waitOnIMU(20,imu,0.0,display,true);
-		//	if(getDistance(tof2)>60)
-		//		bwd_waitOnTOF(60,tof2,display,60);
+		turn_IMUcorrection(imu,0.0,display);
 		stop(100000,display);
 
-		//fwd_waitOnTOF(5,tof0,display,100);
-		//Try w/ IMU correct
-		fwd_waitTOFwIMU(5,imu,0.0,tof0,100,display);
+		fwd_waitTOFwIMU(5,imu,0.0,tof0,200,display);
 		stop(10000,display);
+
 		strafeLeft_waitOnTOF(60,tof4,display,15);
 		stop(100000,display);
 
@@ -255,49 +226,59 @@ int main(int argc, char* argv[])
 	else{
 		//B button 1
 		/****************** Destination B ***********************/
-		fwd_waitOnTOF(75,tof5,display,150);
+		fwd_waitOnTOF(50,tof5,display,160);
 		stop(500000,display);
-		bwd_timed(40,800000,display);
+
+		bwd_timed(40,900000,display);
+
 		stop(1000000,display);
-		if(getCurrImuYaw(imu)<180)
-			turnLeft_waitOnIMU(40,imu,0.0,display,true);
-		else
-			turnRight_waitOnIMU(40,imu,0.0,display,true);
+		turn_IMUcorrection(imu,0.0,display);
 
 		/***************** Flag Wheel **************************/
-		strafeLeft_waitOnTOF(100,tof4,display,100);
+		printf("\n-------------Going into Flag Wheel----------\n");
+		strafeLeft_waitOnTOF(100,tof4,display,80);
 		stop(1000000,display);
-		if(getCurrImuYaw(imu)<180)
-			turnLeft_waitOnIMU(20,imu,0.0,display,true);
-		else
-			turnRight_waitOnIMU(20,imu,0.0,display,true);
+
+		turn_IMUcorrection(imu,0.0,display);
 		stop(100000,display);
 
-		//bwd_waitOnTOF(5,tof1,display,100);
-		//Try w/ IMU correct
-		bwd_waitTOFwIMU(5,imu,0.0,tof1,100,display);
+		bwd_waitTOFwIMU(5,imu,0.0,tof1,200,display);
 		stop(100000,display);
+
 		strafeLeft_waitOnTOF(60,tof4,display,15);
 		stop(100000,display);
 
 		stop(500000,display);
 		sendCommand(22,50,display);
 	}
-/*--------------------------Task 4 Pick up Treasure Chest------------------------*/
-	
-	strafeRight_waitOnTOF(60,tof4,display,40); //Back off of the wall
-	
-	//Correct Robot Orientation
-	if(getCurrImuYaw(imu)<180)
-		turnLeft_waitOnIMU(20,imu,0.0,display,true);
-	else
-		turnRight_waitOnIMU(20,imu,0.0,display,true);
+	/*--------------------------Task 4 Pick up Treasure Chest------------------------*/
 
-	
-	bwd_waitOnTOF(15,tof2,display,420);
-	strafeRight_waitOnTOF(60,tof6,display,50);
+	strafeRight_waitOnTOF(60,tof3,display,200);
+	stop(50000,display);
 
-/*--------------------------Task 4 Pick up Treasure Chest------------------------*/
+	turn_IMUcorrection(imu,0.0,display);
+	stop(50000,display);
+
+	bwd_waitTOFwIMU(10,imu,0.0,tof6,200,display);
+	stop(50000,display);
+
+	strafeRight_waitOnTOF(30,tof3,display,290);
+	stop(50000,display);
+
+	stop(15000000,display);
+
+	/*------------------------Final Task, Climb Plank and Press Button--------*/	
+	turnRight_waitOnIMU(75,imu,90.0,display,true);
+	fwd_waitOnIMU(100,imu,'y',10.0,display);
+	fwd_waitOnIMU(150,imu,'y',3.0,display);
+	stop(1000000,display);
+	fwd_waitOnTOF(50,tof5,display,100);
+	stop(1000000,display);
+	turnLeft_waitOnIMU(75,imu,0.0,display,true);
+	fwd_waitOnTOF(50,tof5,display,85);
+
+
+	/*--------------------------Task 4 Pick up Treasure Chest------------------------*/
 
 	//for future purposes
 	sendCommand(0,0,display);

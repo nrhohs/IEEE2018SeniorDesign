@@ -98,7 +98,7 @@ uint8_t getShortRange(SRANGE *srange) {
 //    if (srange->status==0)
 	srange->range=srange->vl.readRange();
     if (srange->status!=0)
-	printf("\nSrange error %d cannot read range\n",srange->status);
+//	printf("\nSrange error %d cannot read range\n",srange->status);
     return srange->range;
 }
 
@@ -327,6 +327,7 @@ RTIMU *imuInit() {
 
 double getCurrImuRoll(RTIMU *imu) {
     double roll;
+    usleep(imu->IMUGetPollInterval() * 1000);
     if (imu->IMURead())
    {
     RTIMU_DATA imuData = imu->getIMUData();
@@ -339,6 +340,7 @@ double getCurrImuRoll(RTIMU *imu) {
 
 double getCurrImuPitch(RTIMU *imu) {
     double pitch;
+    usleep(imu->IMUGetPollInterval() * 1000);
     if (imu->IMURead())
     {
     RTIMU_DATA imuData = imu->getIMUData();
