@@ -97,7 +97,7 @@ uint8_t getShortRange(SRANGE *srange) {
 
 //    if (srange->status==0)
 	srange->range=srange->vl.readRange();
-    if (srange->status!=0)
+//    if (srange->status!=0)
 //	printf("\nSrange error %d cannot read range\n",srange->status);
     return srange->range;
 }
@@ -112,6 +112,96 @@ void print_range_status(LRANGE *lrange) {
 
     VL53L0X_GetRangeStatusString(RangeStatus, buf);
     printf("Range Status: %i : %s\n", RangeStatus, buf);
+}
+
+VL53L0X_Error calibrateHSsingleMeasure(LRANGE *lrange)
+{
+    
+    uint32_t refSpadCount;
+    uint8_t isApertureSpads;uint8_t VhvSettings;
+    uint8_t PhaseCal;
+    if(lrange->Status == VL53L0X_ERROR_NONE)
+    {
+        printf ("Call of VL53L0X_StaticInit\n");
+        lrange->Status = VL53L0X_StaticInit(lrange->pMyDevice);
+	// Device Initialization
+        print_pal_error(lrange->Status);
+    }
+    
+    if(lrange->Status == VL53L0X_ERROR_NONE)
+    {
+        printf ("Call of VL53L0X_PerformRefCalibration\n");
+        lrange->Status = VL53L0X_PerformRefCalibration(lrange->pMyDevice,
+        		&VhvSettings, &PhaseCal); // Device Initialization
+        print_pal_error(lrange->Status);
+    }
+
+    if(lrange->Status == VL53L0X_ERROR_NONE)
+    {
+        printf ("Call of VL53L0X_PerformRefSpadManagement\n");
+        lrange->Status = VL53L0X_PerformRefSpadManagement(lrange->pMyDevice, &refSpadCount, &isApertureSpads);
+        printf ("refSpadCount = %d, isApertureSpads = %d\n", refSpadCount, isApertureSpads);
+        print_pal_error(lrange->Status);
+    }
+
+    if (lrange->Status == VL53L0X_ERROR_NONE) {
+        lrange->Status = VL53L0X_SetLimitCheckEnable(lrange->pMyDevice,
+        		VL53L0X_CHECKENABLE_SIGMA_FINAL_RANGE, 1);
+    }
+    if (lrange->Status == VL53L0X_ERROR_NONE) {
+        lrange->Status = VL53L0X_SetLimitCheckEnable(lrange->pMyDevice,
+        		VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE, 1);
+    }
+
+    if (lrange->Status == VL53L0X_ERROR_NONE) {
+        lrange->Status = VL53L0X_SetLimitCheckEnable(lrange->pMyDevice,
+			VL53L0X_CHECKENABLE_RANGE_IGNORE_THRESHOLD, 1);
+    }
+
+    if (lrange->Status == VL53L0X_ERROR_NONE) {
+	lrange->Status = VL53L0X_SetLimitCheckEnable(lrange->pMyDevice,
+			VL53L0X_CHECKENABLE_RANGE_IGNORE_THRESHOLD,
+			(FixPoint1616_t)(1.5*0.01*65536));
+    }
+
+    if (lrange->Status == VL53L0X_ERROR_NONE) {
+	lrange->Status = VL53L0X_SetLimitCheckEnable(lrange->pMyDevice,
+			VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE,
+			(FixPoint1616_t)(0.25*65536));
+    }
+    if (lrange->Status == VL53L0X_ERROR_NONE) {
+	lrange->Status = VL53L0X_SetLimitCheckEnable(lrange->pMyDevice,
+			VL53L0X_CHECKENABLE_SIGMA_FINAL_RANGE,
+			(FixPoint1616_t)(18*65536));
+    }
+			
+	
+    if (lrange->Status == VL53L0X_ERROR_NONE) {
+        lrange->Status = VL53L0X_SetMeasurementTimingBudgetMicroSeconds(lrange->pMyDevice, 10000);
+	}
+	
+    if (lrange->Status == VL53L0X_ERROR_NONE) {
+        lrange->Status = VL53L0X_SetVcselPulsePeriod(lrange->pMyDevice,
+		        VL53L0X_VCSEL_PERIOD_PRE_RANGE, 18);
+    }
+    if (lrange->Status == VL53L0X_ERROR_NONE) {
+        lrange->Status = VL53L0X_SetVcselPulsePeriod(lrange->pMyDevice, 
+		        VL53L0X_VCSEL_PERIOD_FINAL_RANGE, 14);
+    }
+
+    if (lrange->Status == VL53L0X_ERROR_NONE) {
+    	lrange->Status = VL53L0X_SetLimitCheckValue(lrange->pMyDevice,
+			VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE,
+			(FixPoint1616_t)(0.25*65536));
+    }
+
+    if (lrange->Status == VL53L0X_ERROR_NONE) {
+	lrange->Status = VL53L0X_SetLimitCheckValue(lrange->pMyDevice,
+			VL53L0X_CHECKENABLE_SIGMA_FINAL_RANGE,
+			(FixPoint1616_t)(32*65536));
+    }
+
+    return lrange->Status;
 }
 
 
@@ -167,7 +257,6 @@ VL53L0X_Error calibrateSingleMeasure(LRANGE *lrange)
 			(FixPoint1616_t)(1.5*0.023*65536));
     }
 
-/*
     if (lrange->Status == VL53L0X_ERROR_NONE) {
 	lrange->Status = VL53L0X_SetLimitCheckEnable(lrange->pMyDevice,
 			VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE,
@@ -178,7 +267,6 @@ VL53L0X_Error calibrateSingleMeasure(LRANGE *lrange)
 			VL53L0X_CHECKENABLE_SIGMA_FINAL_RANGE,
 			(FixPoint1616_t)(60*65536));
     }
-*/
 			
 	
     if (lrange->Status == VL53L0X_ERROR_NONE) {
@@ -254,6 +342,36 @@ uint16_t getLongRange(LRANGE *lrange) {
 	}
 }
 
+LRANGE *initLongRangeBOX(MUX *mux, int inputNo) {
+    LRANGE *lrange=(LRANGE *) malloc(sizeof(LRANGE));
+    lrange->pMyDevice = &lrange->MyDevice;
+    lrange->Status = VL53L0X_ERROR_NONE;
+    lrange->mux=mux;
+    lrange->inputNo=inputNo;
+
+    switchMUX(mux,inputNo);
+
+    //Initalize I2C comms
+    lrange->pMyDevice->I2cDevAddr = 0x29;
+    //Can choose between i2c-0 and ic2-1
+    lrange->pMyDevice->fd = VL53L0X_i2c_init("/dev/i2c-1", lrange->pMyDevice->I2cDevAddr);
+    if (lrange->MyDevice.fd<0) {
+	lrange->Status = VL53L0X_ERROR_CONTROL_INTERFACE;
+	printf("Failed to init on i2c\n");
+    }
+    printf("comms init\n");
+
+    //Data initialization
+    lrange->Status = dataInitializeLR(lrange);
+    printf("lrange data initialized");
+
+    //Calibrate for Single Range Measurement
+    lrange->Status = calibrateHSsingleMeasure(lrange);
+    printf("lrange calibrated\n");
+    
+    return lrange;
+}
+
 TOF *newTOF(int rangeType,MUX *mux,int input) {
     TOF *tof=(TOF *) malloc(sizeof(TOF));
     //rangeType 0 = short range
@@ -269,6 +387,33 @@ TOF *newTOF(int rangeType,MUX *mux,int input) {
     else if(rangeType==1)
     {
 	LRANGE *lrange=initLongRange(mux,input);
+	tof->lrange=lrange;
+	tof->isLRANGE=rangeType;
+	tof->mux=mux;
+	tof->inputNo=input;
+    }
+    else {
+    	printf("Invalid range type for TOF\n");
+	return NULL;
+    }
+    return tof;
+}
+
+TOF *newTOFBOX(int rangeType,MUX *mux,int input) {
+    TOF *tof=(TOF *) malloc(sizeof(TOF));
+    //rangeType 0 = short range
+    // 		1 = long range
+    if (rangeType==0)
+    {
+	SRANGE *srange=initVL6180X(mux,input);
+	tof->srange=srange;
+	tof->isLRANGE=rangeType;
+	tof->mux=mux;
+	tof->inputNo=input;
+    }
+    else if(rangeType==1)
+    {
+	LRANGE *lrange=initLongRangeBOX(mux,input);
 	tof->lrange=lrange;
 	tof->isLRANGE=rangeType;
 	tof->mux=mux;

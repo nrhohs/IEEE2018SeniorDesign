@@ -72,6 +72,7 @@ typedef struct longRange LRANGE;
 //private declarations
 void print_range_status(LRANGE *lrange);
 VL53L0X_Error calibrateSingleMeasure(LRANGE *lrange);
+VL53L0X_Error calibrateHSSingleMeasure(LRANGE *lrange);
 VL53L0X_Error dataInitializeLR(LRANGE *lrange);
 
 
@@ -81,6 +82,7 @@ VL53L0X_Error dataInitializeLR(LRANGE *lrange);
 		"timingBudgetMicro"
 */
 LRANGE *initLongRange(MUX *,int);
+LRANGE *initLongRangeBOX(MUX *,int);
     
 /* Method: getLongRange
     Description: Input multiplexor value as parameter and
@@ -99,6 +101,7 @@ struct tof {
 
 typedef struct tof TOF;
 TOF *newTOF(int ,MUX *,int);
+TOF *newTOFBOX(int ,MUX *,int);
 int isLRANGE(TOF *);
 int getDistance(TOF *tof);
 

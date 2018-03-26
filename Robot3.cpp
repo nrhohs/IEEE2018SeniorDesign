@@ -121,19 +121,30 @@ int main(int argc, char* argv[])
 			//for the latter stages of Robot testing
 			else if (strcmp(argv[i],"-pid")==0){
 
-				sendCommand(23,40,display);
-				sendCommand(24,40,display);
+				strafeLeft_wallFollow(30,imu,tof4,tof2,0.0,100,display);
 				return 0;
+				/*
+				sendCommand(24,40,display);
+				usleep(2000000);
+				sendCommand(23,40,display);
+				usleep(2000000);
+				stop(500000,display);
 				//Actuator Test
-/*
 				turnRight_waitOnIMU(75,imu,90.0,display,true);
 				fwd_waitTOFwIMU(30,imu,90.0,tof5,300,display);
 				fwd_waitOnIMU(200,imu,'y',10.0,display);
 				fwd_waitOnTOF(100,tof5,display,500);
+				stop(500000,display);
+
+				driveToTOF(20,tof5,display,150);
+				//bwd_waitOnTOF(50,tof5,display,150);
 				stop(1000000,display);
 				turnLeft_waitOnIMU(75,imu,0.0,display,true);
+				stop(500000,display);
+				turn_IMUcorrection(imu,0.0,display);
 				fwd_waitOnTOF(50,tof5,display,85);
-				return 0;*/
+				return 0;
+				*/
 			}
 		}
 	}
@@ -161,6 +172,8 @@ int main(int argc, char* argv[])
 		fwd_waitOnTOF(55, tof5, display, 85);
 		stop(1000000,display);
 		bwd_waitOnTOF(55, tof5, display, 415);
+		stop(100000,display);
+		driveToTOF(20,tof5,display,470,1);
 
 	}
 	else{
@@ -168,6 +181,8 @@ int main(int argc, char* argv[])
 		bwd_waitOnTOF(55,tof2,display,85);
 		stop(1000000,display);
 		fwd_waitOnTOF(55, tof2, display, 415);
+		stop(100000,display);
+		driveToTOF(20,tof5,display,480,1);
 	}
 	/*----------------------First Task, Go to Button on Top of Ramp--------------------*/	
 
@@ -175,6 +190,7 @@ int main(int argc, char* argv[])
 	//Rotate 90 to go down ramp
 	turnLeft_waitOnIMU(75,imu,85.0,display,false);
 	stop(500000,display);
+	turn_IMUcorrection(imu,270.0,display);
 
 	//Go down ramp
 	fwd_timed(30,5000000,display);
@@ -215,10 +231,16 @@ int main(int argc, char* argv[])
 		turn_IMUcorrection(imu,0.0,display);
 		stop(100000,display);
 
-		fwd_waitTOFwIMU(5,imu,0.0,tof0,200,display);
+		strafeToTOF(30,tof4,display,25);
+		stop(1000000,display);
+
+		turn_IMUcorrection(imu,0.0,display);
+		stop(100000,display);
+
+		fwd_waitTOFwIMU(5,imu,0.0,tof1,200,display);
 		stop(10000,display);
 
-		strafeLeft_waitOnTOF(60,tof4,display,15);
+		strafeLeft_waitOnTOF(90,tof4,display,15);
 		stop(100000,display);
 
 		sendCommand(22,50,display);
@@ -242,10 +264,16 @@ int main(int argc, char* argv[])
 		turn_IMUcorrection(imu,0.0,display);
 		stop(100000,display);
 
-		bwd_waitTOFwIMU(5,imu,0.0,tof1,200,display);
+		strafeToTOF(30,tof4,display,25);
+		stop(1000000,display);
+
+		turn_IMUcorrection(imu,0.0,display);
 		stop(100000,display);
 
-		strafeLeft_waitOnTOF(60,tof4,display,15);
+		bwd_waitTOFwIMU(5,imu,0.0,tof0,200,display);
+		stop(100000,display);
+
+		strafeLeft_waitOnTOF(30,tof4,display,15);
 		stop(100000,display);
 
 		stop(500000,display);
@@ -253,32 +281,51 @@ int main(int argc, char* argv[])
 	}
 	/*--------------------------Task 4 Pick up Treasure Chest------------------------*/
 
+
+
 	strafeRight_waitOnTOF(60,tof3,display,200);
 	stop(50000,display);
 
 	turn_IMUcorrection(imu,0.0,display);
 	stop(50000,display);
 
-	bwd_waitTOFwIMU(10,imu,0.0,tof6,200,display);
+
+	sendCommand(2,10,display);
+	while(getDistance(tof6)<100);
+	//bwd_waitTOFwIMU(10,imu,0.0,tof6,100,display);
 	stop(50000,display);
 
-	strafeRight_waitOnTOF(30,tof3,display,290);
+	strafeRight_waitOnTOF(30,tof3,display,280);
+	strafeRight_timed(30,1000000,display);
+	strafeLeft_timed(15,50000,display);
 	stop(50000,display);
 
-	stop(15000000,display);
+	sendCommand(24,40,display);
+	usleep(2000000);
+	sendCommand(23,40,display);
+	stop(500000,display);
+	usleep(4000000);
+	turnRight_waitOnIMU(75,imu,90.0,display,true);
+
 
 	/*------------------------Final Task, Climb Plank and Press Button--------*/	
-	turnRight_waitOnIMU(75,imu,90.0,display,true);
-	fwd_waitOnIMU(100,imu,'y',10.0,display);
-	fwd_waitOnIMU(150,imu,'y',3.0,display);
-	stop(1000000,display);
-	fwd_waitOnTOF(50,tof5,display,100);
+
+	fwd_waitTOFwIMU(30,imu,90.0,tof5,300,display);
+	fwd_waitOnIMU(200,imu,'y',10.0,display);
+	fwd_waitOnTOF(100,tof5,display,500);
+	stop(500000,display);
+
+	driveToTOF(20,tof5,display,150,1);
+	//bwd_waitOnTOF(50,tof5,display,150);
 	stop(1000000,display);
 	turnLeft_waitOnIMU(75,imu,0.0,display,true);
-	fwd_waitOnTOF(50,tof5,display,85);
+	stop(500000,display);
+	turn_IMUcorrection(imu,0.0,display);
+	if (rawcode%2==1)
+	    fwd_waitOnTOF(50,tof5,display,85);
+	else
+	    bwd_waitOnTOF(50,tof2,display,85);
 
-
-	/*--------------------------Task 4 Pick up Treasure Chest------------------------*/
 
 	//for future purposes
 	sendCommand(0,0,display);

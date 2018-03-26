@@ -53,13 +53,24 @@ void Motor::updatePID() {
     Serial.print("Output:"); Serial.print(Output); Serial.print("  ");
     Serial.print("MPWM:"); Serial.print(MPWM); Serial.print("  ");
   }
+  if (PWMpin==5) {
+    Serial.print("Setpoint:"); Serial.print(Setpoint); Serial.print("  ");
+    Serial.print("Input:"); Serial.print(Input); Serial.print("  ");
+    Serial.print("Output:"); Serial.print(Output); Serial.print("  ");
+    Serial.print("MPWM:"); Serial.print(MPWM); Serial.print("  ");
+  }
 */
   MPWM = constrain(int(MPWM+Output),0,255);
   if (Setpoint==0) 
     MPWM=0; 
-//  if (PWMpin==8) { 
-//    Serial.print("NewMPWM:"); Serial.print(MPWM); Serial.println("  ");
-//  }
+/*
+  if (PWMpin==8) { 
+    Serial.print("NewMPWM:"); Serial.print(MPWM); Serial.println("  ");
+  }
+  if (PWMpin==5) { 
+    Serial.println("NewMPWM:"); Serial.print(MPWM); Serial.println("  ");
+  }
+*/
   setSpeed(MPWM);
 //  Serial.println(MPWM);
 }
@@ -78,4 +89,8 @@ long Motor::getPosition() {
 
 void Motor::resetPosition(){
   Position = 0;
+}
+
+void Motor::changeTunings(double p, double i, double d){
+  MPID.SetTunings(p,i,d);
 }

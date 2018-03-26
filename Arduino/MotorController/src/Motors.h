@@ -29,12 +29,13 @@ class Motor
   PID MPID;
   void updatePID();
   double  Setpoint;
+  double getRPM(long);  
+  void changeTunings(double,double,double);
 
   private:
   uint8_t PWMpin, IN1pin, IN2pin, MPWM;  
   double  Input, Output;
   long Position, prevCount; 
-  double getRPM(long);  
 };
 
 

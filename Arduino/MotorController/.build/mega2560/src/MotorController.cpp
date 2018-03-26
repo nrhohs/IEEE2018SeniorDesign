@@ -21,18 +21,26 @@ Motor M[4] =
 }; 
 
 Motor FlagWheel(5,40,41,2,3);
-//Motor Actuator(6,42,43,-1,-1);
+
               
+int ActuatorPins[3] = {6,38,39};
+
 unsigned long lastMilli = 0;
 unsigned char incomingByte[2];
 int k=0;
 
 void setup() {
   Serial.begin(9600);
+  analogReference(INTERNAL2V56);
+  FlagWheel.changeTunings(0.06,0.01,0.03);
+  int current = analogRead(A0);
   incomingByte[0]=0;
   incomingByte[1]=0;
   for(int j=0;j<4;j++) {
     M[j].run(STOP);
+  }
+  for(int j=0;j<3;j++) {
+    pinMode(ActuatorPins[j],OUTPUT);
   }
 }
 
@@ -48,8 +56,8 @@ void loop() {
    
     int cmd = incomingByte[0];
     int Speed = incomingByte[1];
-//    int cmd = 22;
-//    int Speed = 0;
+    //int cmd = 22;
+    //int Speed = 0;
     if (cmd==0) {                   //STOP
       for(int j=0;j<4;j++) {
         M[j].run(STOP);
@@ -266,28 +274,48 @@ void loop() {
     }
     else if(cmd == 22){               //Spin Wheel CCW     
       long start = FlagWheel.getPosition();
-      FlagWheel.setSpeed(40);
+      FlagWheel.Setpoint=30;
+      //FlagWheel.setSpeed(40);
       FlagWheel.run(BACKWARD);
+      int i =0;
+      int avg = 0;
       while (FlagWheel.getPosition() < start+9600) { 
-      }
-      FlagWheel.run(STOP);
-    }
 /*
-    else if(cmd == 23){               //Linear Actuator Up     
-      Serial.print("UP");
-      Actuator.setSpeed(255);
-      Actuator.run(FORWARD);
+	Serial.print("Position: ");
+	Serial.print(FlagWheel.getPosition());
+	Serial.print("  Current: ");
+	int current = analogRead(A0);
+	Serial.println(current);
+	if (i==0)
+	  avg-=current;
+	if (current != 0) {
+	  i++;
+	  avg+=current;
+	}
+*/
+        FlagWheel.updatePID();
+      }
+	Serial.print("\n AVERAGE: ");
+	Serial.println(avg/i);
+      FlagWheel.Setpoint=0;
+      FlagWheel.run(STOP);
+	delay(10000);
     }
-    else if(cmd == 24){               //Linear Actuator Down     
-      Serial.print("DOWN");
-      Actuator.setSpeed(220);
-      Actuator.run(BACKWARD);
+    else if(cmd == 23){               //Linear Actuator Down     
+      digitalWrite(ActuatorPins[2],LOW);
+      digitalWrite(ActuatorPins[1],HIGH);
+      analogWrite(ActuatorPins[0], 220);
+    }
+    else if(cmd == 24){               //Linear Actuator Up     
+      digitalWrite(ActuatorPins[1],LOW);
+      digitalWrite(ActuatorPins[2],HIGH);
+      analogWrite(ActuatorPins[0], 255);
     }
     else if(cmd == 25){               //Linear Actuator Stop     
-      Serial.print("STOP");
-      Actuator.run(STOP);
+      digitalWrite(ActuatorPins[1],LOW);
+      digitalWrite(ActuatorPins[2],LOW);
+      analogWrite(ActuatorPins[0], 0);
     }
-*/
     else {                             //STOP
       for(int j=0;j<4;j++){
         M[j].run(STOP);
@@ -302,8 +330,8 @@ void loop() {
       M[j].updatePID();
     }  
 
-
-  k++;
-  Serial.flush();
+    k++;
   } 
+
+  Serial.flush();
 }

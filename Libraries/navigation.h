@@ -35,6 +35,7 @@ void strafeRight_waitOnIMU(unsigned char speed, RTIMU *imu, char axis, double ta
 void strafeLeft_timed(unsigned char speed, int runtime, int display);
 void strafeLeft_waitOnTOF(unsigned char speed, TOF *sensor, int display, int distance = 110);
 void strafeLeft_waitOnIMU(unsigned char speed, RTIMU *imu, char axis, double target, int display);
+void strafeLeft_wallFollow(unsigned char speed, RTIMU *imu, TOF *sensor, TOF *tof2, double angle, int TOFtarget, int display);
 
 void turnRight_timed(unsigned char speed, int runtime, int display);
 void turnRight_waitOnIMU(unsigned char speed, RTIMU *imu, double targetYaw, int display, bool isAbsolute);
@@ -50,6 +51,9 @@ void turnBackLeft_waitOnIMU(unsigned char speed, RTIMU *imu, double targetYaw, i
 void turnBackRight_waitOnIMU(unsigned char speed, RTIMU *imu, double targetYaw, int display, bool isAbsolute);
 
 void turn_IMUcorrection(RTIMU *imu, double angle, int display);
+
+void driveToTOF(unsigned char speed,TOF *tof,int display,int target,bool dir);
+void strafeToTOF(unsigned char speed,TOF *tof,int display,int target);
 
 void wallFollowDrive(unsigned char speed, unsigned char direction, TOF *face, TOF *sideOne, TOF *sideTwo, RTIMU *imu, int display);
 void wallFollowStrafe(unsigned char speed, unsigned char direction, TOF *face, TOF *sideOne, TOF *sideTwo, RTIMU *imu, int display);
