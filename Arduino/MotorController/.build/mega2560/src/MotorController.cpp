@@ -36,6 +36,8 @@ void setup() {
   int current = analogRead(A0);
   incomingByte[0]=0;
   incomingByte[1]=0;
+  FlagWheel.run(STOP);
+  FlagWheel.Setpoint=0;
   for(int j=0;j<4;j++) {
     M[j].run(STOP);
   }
@@ -294,12 +296,13 @@ void loop() {
 	}
 */
         FlagWheel.updatePID();
+	delay(100);
       }
 	Serial.print("\n AVERAGE: ");
 	Serial.println(avg/i);
-      FlagWheel.Setpoint=0;
-      FlagWheel.run(STOP);
-	delay(10000);
+        FlagWheel.Setpoint=0;
+        FlagWheel.run(STOP);
+	//delay(10000);
     }
     else if(cmd == 23){               //Linear Actuator Down     
       digitalWrite(ActuatorPins[2],LOW);

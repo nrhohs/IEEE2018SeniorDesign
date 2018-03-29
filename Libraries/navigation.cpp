@@ -21,6 +21,7 @@ how the robot traverses the arena.
 #include "rs232.h"
 #include "SensorLib2.h"
 #include <math.h>
+#include <time.h>
 
 #define CPORT_NR 24
 #define PRINT_DEBUG 0
@@ -253,6 +254,7 @@ void fwd_waitOnIMU(unsigned char speed, RTIMU *imu, char axis, double target, in
     unsigned char direction = 1;
     RS232_SendByte(CPORT_NR, direction);
     RS232_SendByte(CPORT_NR, speed);
+    lcdPosition(display,0,0);
     printf("Sent to Arduino: 'FWD at %d'\n", speed);// Cmdline output of command
     lcdPrintf(display,"Sent: '%3d %3d'", direction, speed);	// LCD output
     waitOnIMU(imu,axis,target,false);
@@ -284,6 +286,7 @@ void fwd_waitTOFwIMU(unsigned char speed,RTIMU *imu,double IMUtarget,TOF *sensor
     RS232_SendByte(CPORT_NR, direction);
     RS232_SendByte(CPORT_NR, speed);
     //printf("Sent to Arduino: 'FWD at %d'\n", speed);// Cmdline output of command
+    lcdPosition(display,0,0);
     lcdPrintf(display,"Sent: '%3d %3d'", direction, speed);	// LCD output
     //Check TOF
     while (!pollTOF(sensor,TOFtarget))
@@ -314,6 +317,73 @@ void fwd_waitTOFwIMU(unsigned char speed,RTIMU *imu,double IMUtarget,TOF *sensor
     }
 }
 
+void fwd_wallFollow(unsigned char speed, RTIMU *imu, TOF *sensor, TOF *tof2, double angle, int TOFtarget, int display) {
+    unsigned char direction = 1;
+    //Set direction to STRAFE LEFT
+    RS232_SendByte(CPORT_NR, direction);
+    RS232_SendByte(CPORT_NR, speed);
+    printf("Sent to Arduino: 'WallFollow fwd at %d'\n", speed);
+    lcdPosition(display,0,0);
+    lcdPrintf(display,"Sent: '%3d %3d'", direction, speed);
+
+
+    double threshhold = 3.0;
+    int TOFthreshhold = 15;
+    double current=0.0f;
+    double stopTarget=0.0f;
+    double IMUtarget = stopTarget;
+    current=getCurrImuYaw(imu);
+    //printf("\n Current Position: %f\n",current);
+    //printf("\n Stop Target: %f\n",stopTarget);
+    double stopTargetMin=fmod((fmod(stopTarget,360.0) -  threshhold + 360),360.0);
+    //printf("\n Stop target (min) = %f",stopTargetMin);
+    double stopTargetMax=fmod((fmod(stopTarget,360.0) +  threshhold + 360),360.0);
+
+
+    if (stopTargetMin > 350.0)
+	stopTargetMax+=360.0;
+    if (current < 30.0)
+	current+=360.0;
+    //printf("\n Stop target (max) = %f",stopTargetMax);
+
+    //Send cmd to arduino
+    //Check TOF
+    while (!pollTOF(sensor,TOFtarget))
+    {
+    	current=getCurrImuYaw(imu);
+    	if (current < 30.0)
+		current+=360.0;
+	//Correct left
+    	//printf("\n current Yaw = %f",current);
+	if (current > stopTargetMax)
+	{
+            turnLeft_waitOnIMU(20, imu, IMUtarget,display,true);
+	    //stop(400,display);
+    	    RS232_SendByte(CPORT_NR, direction);
+    	    RS232_SendByte(CPORT_NR, speed);
+	}
+	//Correct right
+	else if (current < stopTargetMin)
+	{
+	    turnRight_waitOnIMU(20,imu,IMUtarget,display,true);
+	    //stop(400,display);
+    	    RS232_SendByte(CPORT_NR, direction);
+    	    RS232_SendByte(CPORT_NR, speed);
+	}
+	else if (getDistance(tof2) > 30+TOFthreshhold) {
+	    sendCommand(8,10,display); 
+	    while(getDistance(tof2)>30+TOFthreshhold);
+	    sendCommand(direction,speed,display); 
+	}
+	else if (getDistance(tof2) < 30-TOFthreshhold) {
+	    sendCommand(7,10,display); 
+	    while(getDistance(tof2)<=30-TOFthreshhold);
+	    sendCommand(direction,speed,display); 
+	}
+	else
+	    continue;
+    }
+}
 // Moves the robot backward at a specified speed for a set amount of time
 void bwd_timed(unsigned char speed, int runtime, int display){
 	unsigned char direction = 2;												// Set direction to BWD											
@@ -375,6 +445,7 @@ void bwd_waitTOFwIMU(unsigned char speed,RTIMU *imu,double IMUtarget,TOF *sensor
     RS232_SendByte(CPORT_NR, direction);
     RS232_SendByte(CPORT_NR, speed);
    // printf("Sent to Arduino: 'FWD at %d'\n", speed);// Cmdline output of command
+    lcdPosition(display,0,0);
     lcdPrintf(display,"Sent: '%3d %3d'", direction, speed);	// LCD output
     //Check TOF
     while (!pollTOF(sensor,TOFtarget))
@@ -406,6 +477,73 @@ void bwd_waitTOFwIMU(unsigned char speed,RTIMU *imu,double IMUtarget,TOF *sensor
 }
 
 
+void bwd_wallFollow(unsigned char speed, RTIMU *imu, TOF *sensor, TOF *tof2, double angle, int TOFtarget, int display) {
+    unsigned char direction = 2;
+    //Set direction to STRAFE LEFT
+    RS232_SendByte(CPORT_NR, direction);
+    RS232_SendByte(CPORT_NR, speed);
+    printf("Sent to Arduino: 'WallFollow bwd at %d'\n", speed);
+    lcdPosition(display,0,0);
+    lcdPrintf(display,"Sent: '%3d %3d'", direction, speed);
+
+
+    double threshhold = 3.0;
+    int TOFthreshhold = 15;
+    double current=0.0f;
+    double stopTarget=0.0f;
+    double IMUtarget = stopTarget;
+    current=getCurrImuYaw(imu);
+    //printf("\n Current Position: %f\n",current);
+    //printf("\n Stop Target: %f\n",stopTarget);
+    double stopTargetMin=fmod((fmod(stopTarget,360.0) -  threshhold + 360),360.0);
+    //printf("\n Stop target (min) = %f",stopTargetMin);
+    double stopTargetMax=fmod((fmod(stopTarget,360.0) +  threshhold + 360),360.0);
+
+
+    if (stopTargetMin > 350.0)
+	stopTargetMax+=360.0;
+    if (current < 30.0)
+	current+=360.0;
+    //printf("\n Stop target (max) = %f",stopTargetMax);
+
+    //Send cmd to arduino
+    //Check TOF
+    while (!pollTOF(sensor,TOFtarget))
+    {
+    	current=getCurrImuYaw(imu);
+    	if (current < 30.0)
+		current+=360.0;
+	//Correct left
+    	//printf("\n current Yaw = %f",current);
+	if (current > stopTargetMax)
+	{
+            turnLeft_waitOnIMU(20, imu, IMUtarget,display,true);
+	    //stop(400,display);
+    	    RS232_SendByte(CPORT_NR, direction);
+    	    RS232_SendByte(CPORT_NR, speed);
+	}
+	//Correct right
+	else if (current < stopTargetMin)
+	{
+	    turnRight_waitOnIMU(20,imu,IMUtarget,display,true);
+	    //stop(400,display);
+    	    RS232_SendByte(CPORT_NR, direction);
+    	    RS232_SendByte(CPORT_NR, speed);
+	}
+	else if (getDistance(tof2) > 30+TOFthreshhold) {
+	    sendCommand(10,10,display); 
+	    while(getDistance(tof2)>30+TOFthreshhold);
+	    sendCommand(direction,speed,display); 
+	}
+	else if (getDistance(tof2) < 30-TOFthreshhold) {
+	    sendCommand(9,10,display); 
+	    while(getDistance(tof2)<=30-TOFthreshhold);
+	    sendCommand(direction,speed,display); 
+	}
+	else
+	    continue;
+    }
+}
 // Strafes the robot right at a specified speed for a set amount of time
 void strafeRight_timed(unsigned char speed, int runtime, int display){
 	unsigned char direction = 3;												// Set direction to STRAFE RIGHT							
@@ -489,8 +627,8 @@ void strafeLeft_wallFollow(unsigned char speed, RTIMU *imu, TOF *sensor, TOF *to
     lcdPrintf(display,"Sent: '%3d %3d'", direction, speed);
 
 
-    double threshhold = 1.0;
-    int TOFthreshhold = 15;
+    double threshhold = 3.0;
+    int TOFthreshhold = 20;
     double current=0.0f;
     double stopTarget=0.0f;
     double IMUtarget = stopTarget;
@@ -519,7 +657,7 @@ void strafeLeft_wallFollow(unsigned char speed, RTIMU *imu, TOF *sensor, TOF *to
     	//printf("\n current Yaw = %f",current);
 	if (current > stopTargetMax)
 	{
-            turnLeft_waitOnIMU(25, imu, IMUtarget,display,true);
+            turnLeft_waitOnIMU(20, imu, IMUtarget,display,true);
 	    //stop(400,display);
     	    RS232_SendByte(CPORT_NR, direction);
     	    RS232_SendByte(CPORT_NR, speed);
@@ -527,19 +665,25 @@ void strafeLeft_wallFollow(unsigned char speed, RTIMU *imu, TOF *sensor, TOF *to
 	//Correct right
 	else if (current < stopTargetMin)
 	{
-	    turnRight_waitOnIMU(25,imu,IMUtarget,display,true);
+	    turnRight_waitOnIMU(20,imu,IMUtarget,display,true);
 	    //stop(400,display);
     	    RS232_SendByte(CPORT_NR, direction);
     	    RS232_SendByte(CPORT_NR, speed);
 	}
-	else if (getDistance(tof2) > 100+TOFthreshhold) {
-	    sendCommand(2,10,display); 
-	    while(getDistance(tof2)>100+TOFthreshhold);
+	else if (getDistance(tof2) > 150+TOFthreshhold) {
+	    if (tof2->inputNo==2)
+	    	sendCommand(2,10,display); 
+	    else if (tof2->inputNo==5)
+	    	sendCommand(1,10,display); 
+	    while(getDistance(tof2)>150+TOFthreshhold);
 	    sendCommand(direction,speed,display); 
 	}
-	else if (getDistance(tof2) < 100-TOFthreshhold) {
-	    sendCommand(1,10,display); 
-	    while(getDistance(tof2)<=100-TOFthreshhold);
+	else if (getDistance(tof2) < 150-TOFthreshhold) {
+	    if (tof2->inputNo==2)
+	    	sendCommand(1,10,display); 
+	    else if (tof2->inputNo==5)
+	    	sendCommand(2,10,display); 
+	    while(getDistance(tof2)<=150-TOFthreshhold);
 	    sendCommand(direction,speed,display); 
 	}
 	else
@@ -569,6 +713,17 @@ void turnRight_waitOnIMU(unsigned char speed, RTIMU *imu, double targetYaw, int 
     waitOnIMU(imu,'z',targetYaw,isAbsolute);
 }
 
+void turnRight_waitOnIMU_F(unsigned char speed, RTIMU *imu, double targetYaw, int display, bool isAbsolute) {
+    unsigned char direction = 17;
+    //Set direction to TURN RIGHT FRONT AXIS
+    RS232_SendByte(CPORT_NR, direction);
+    RS232_SendByte(CPORT_NR, speed);
+    printf("Sent to Arduino: 'TURN RIGHT FA at %d'\n", speed);
+    lcdPosition(display,0,0);
+    lcdPrintf(display,"Sent: '%3d %3d'", direction, speed);
+    waitOnIMU(imu,'z',targetYaw,isAbsolute);
+}
+
 
 // Turns the robot left about it's center axis at a specified speed for a set amount of time
 void turnLeft_timed(unsigned char speed, int runtime, int display){
@@ -583,6 +738,19 @@ void turnLeft_timed(unsigned char speed, int runtime, int display){
 
 void turnLeft_waitOnIMU(unsigned char speed, RTIMU *imu, double targetYaw, int display, bool isAbsolute) {
     unsigned char direction = 6;
+    //Set direction to TURN LEFT
+    RS232_SendByte(CPORT_NR, direction);
+    RS232_SendByte(CPORT_NR, speed);
+    lcdPosition(display,0,0);
+    lcdPrintf(display,"Sent: '%3d %3d'", direction, speed);
+    if (!isAbsolute)
+    	waitOnIMU(imu,'z',(-1)*targetYaw,isAbsolute);
+    else
+	waitOnIMU(imu,'z',targetYaw,isAbsolute);
+}
+
+void turnLeft_waitOnIMU_B(unsigned char speed, RTIMU *imu, double targetYaw, int display, bool isAbsolute) {
+    unsigned char direction = 16;
     //Set direction to TURN LEFT
     RS232_SendByte(CPORT_NR, direction);
     RS232_SendByte(CPORT_NR, speed);
@@ -675,6 +843,21 @@ void turn_IMUcorrection(RTIMU *imu, double angle, int display) {
     }
 }
 
+void turnToFlag(RTIMU *imu, double angle, int display) {
+    if (angle==358.0) {
+    	if (getCurrImuYaw(imu) > angle || getCurrImuYaw(imu) < 20)
+	    turnLeft_waitOnIMU_B(20,imu,angle,display,true);
+    	else
+	    turnRight_waitOnIMU(20,imu,angle,display,true);
+    }
+    else if (angle==2.0) {
+	if (getCurrImuYaw(imu) > 355 || getCurrImuYaw(imu) < angle)
+	    turnLeft_waitOnIMU(20,imu,angle,display,true);
+	else
+	    turnRight_waitOnIMU_F(20,imu,angle,display,true);
+    }
+}
+
 void driveToTOF(unsigned char speed, TOF *tof,int display,int target,bool dir) {
     int currDistance=getDistance(tof);
     if (target-currDistance >= 0) {
@@ -699,6 +882,48 @@ void strafeToTOF(unsigned char speed, TOF *tof,int display,int target) {
     else
 	strafeLeft_waitOnTOF(speed,tof,display,target);
 }    
+
+void drive_PID(unsigned char speed, TOF *tof, int display, int target) {
+    double Kp = 0.35;
+    double Ki = 0.0;
+    double Kd = 0.1;
+    double Output = 0.0;
+    int error = 0;
+    int integral = 0;
+    int derivative = 0;
+    int lasterror = 0;
+    int threshold = 5;
+    int distance = 0;
+    long int time;
+    long int last_time;
+    struct timespec gettime_now;
+    clock_gettime(CLOCK_REALTIME, &gettime_now);
+    last_time = gettime_now.tv_nsec;
+    while(1) {
+        clock_gettime(CLOCK_REALTIME, &gettime_now);
+	time = gettime_now.tv_nsec;
+	if (time > last_time+100) {
+	    distance = getDistance(tof);
+	    error = target - distance;
+	    integral = integral+(error);
+	    derivative = (error-lasterror);
+	    Output = (Kp*error+Ki*integral+Kd*derivative);
+	    lasterror = error;
+	    if (distance > 8000) {
+		Output = speed;
+		lasterror = 0;
+	    }
+	    printf("Output %f, Distance: %d\n",Output,distance);
+	    if (error < 0)
+                sendCommand(1,0+abs(Output),display);
+	    else
+		sendCommand(2,0+abs(Output),display);
+	    if (distance <= target+threshold && distance >= target - threshold)
+	        break;
+	}
+    }
+    printf("Final Distance: %d",distance);
+}
 
 void wallFollowDrive(unsigned char speed, unsigned char direction, TOF *face, TOF *sideOne, TOF *sideTwo, RTIMU *imu, int display);
 void wallFollowStrafe(unsigned char speed, unsigned char direction, TOF *face, TOF *sideOne, TOF *sideTwo, RTIMU *imu, int display);

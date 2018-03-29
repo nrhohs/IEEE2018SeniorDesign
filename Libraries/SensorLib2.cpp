@@ -619,7 +619,7 @@ int routeread(int display)
 
 	//Send to LCD
 	lcdPosition(display,0,1);
-	lcdPrintf(display,"Route: '%d'",decodesStr+1);
+	lcdPrintf(display,"Route %d.",decodesStr+1);
 //	gpioTerminate();
 	return(decodesStr);
 
