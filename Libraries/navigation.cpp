@@ -261,9 +261,9 @@ void fwd_waitOnIMU(unsigned char speed, RTIMU *imu, char axis, double target, in
 }
 
 //fwd_waitOnTOF w/ IMU correction
-void fwd_waitTOFwIMU(unsigned char speed,RTIMU *imu,double IMUtarget,TOF *sensor,int TOFtarget,int display)
+void fwd_waitTOFwIMU(unsigned char speed,RTIMU *imu,double IMUtarget,TOF *sensor,int TOFtarget,int display, int turnSpeed)
 {
-    double threshhold = 1.0;
+    double threshhold = 2.5;
     double current=0.0f;
     double stopTarget=0.0f;
     current=getCurrImuYaw(imu);
@@ -298,7 +298,7 @@ void fwd_waitTOFwIMU(unsigned char speed,RTIMU *imu,double IMUtarget,TOF *sensor
     	//printf("\n current Yaw = %f",current);
 	if (current > stopTargetMax)
 	{
-            turnLeft_waitOnIMU(25, imu, IMUtarget,display,true);
+            turnLeft_waitOnIMU(turnSpeed, imu, IMUtarget,display,true);
 	    //stop(400,display);
     	    RS232_SendByte(CPORT_NR, direction);
     	    RS232_SendByte(CPORT_NR, speed);
@@ -307,7 +307,7 @@ void fwd_waitTOFwIMU(unsigned char speed,RTIMU *imu,double IMUtarget,TOF *sensor
 	//Correct right
 	else if (current < stopTargetMin)
 	{
-	    turnRight_waitOnIMU(25,imu,IMUtarget,display,true);
+	    turnRight_waitOnIMU(turnSpeed,imu,IMUtarget,display,true);
 	    //stop(400,display);
     	    RS232_SendByte(CPORT_NR, direction);
     	    RS232_SendByte(CPORT_NR, speed);
@@ -422,7 +422,7 @@ void bwd_waitOnIMU(unsigned char speed, RTIMU *imu, char axis, double target, in
 }
 
 //bwd_waitOnTOF w/ IMU correction
-void bwd_waitTOFwIMU(unsigned char speed,RTIMU *imu,double IMUtarget,TOF *sensor,int TOFtarget,int display)
+void bwd_waitTOFwIMU(unsigned char speed,RTIMU *imu,double IMUtarget,TOF *sensor,int TOFtarget,int display, int turnSpeed)
 {
     double threshhold = 1.0;
     double current=0.0f;
@@ -457,7 +457,7 @@ void bwd_waitTOFwIMU(unsigned char speed,RTIMU *imu,double IMUtarget,TOF *sensor
 	//Correct left
 	if (current > stopTargetMax)
 	{
-            turnLeft_waitOnIMU(25, imu, IMUtarget,display,true);
+            turnLeft_waitOnIMU(turnSpeed, imu, IMUtarget,display,true);
 	    //stop(400,display);
     	    RS232_SendByte(CPORT_NR, direction);
     	    RS232_SendByte(CPORT_NR, speed);
@@ -466,7 +466,7 @@ void bwd_waitTOFwIMU(unsigned char speed,RTIMU *imu,double IMUtarget,TOF *sensor
 	//Correct right
 	else if (current < stopTargetMin)
 	{
-	    turnRight_waitOnIMU(25,imu,IMUtarget,display,true);
+	    turnRight_waitOnIMU(turnSpeed,imu,IMUtarget,display,true);
 	    //stop(400,display);
     	    RS232_SendByte(CPORT_NR, direction);
     	    RS232_SendByte(CPORT_NR, speed);
@@ -691,6 +691,138 @@ void strafeLeft_wallFollow(unsigned char speed, RTIMU *imu, TOF *sensor, TOF *to
     }
 }
 
+void strafeLeft_wallFollow_d(unsigned char speed, RTIMU *imu, TOF *sensor, TOF *tof2, double angle, int TOFtarget, int display) {
+    unsigned char direction = 4;
+    //Set direction to STRAFE LEFT
+    RS232_SendByte(CPORT_NR, direction);
+    RS232_SendByte(CPORT_NR, speed);
+    printf("Sent to Arduino: 'STRAFE LEFT at %d'\n", speed);
+    lcdPosition(display,0,0);
+    lcdPrintf(display,"Sent: '%3d %3d'", direction, speed);
+
+
+    double threshhold = 10.0;
+    int TOFthreshhold = 40;
+    double current=0.0f;
+    double stopTarget=0.0f;
+    double IMUtarget = stopTarget;
+    current=getCurrImuYaw(imu);
+    //printf("\n Current Position: %f\n",current);
+    //printf("\n Stop Target: %f\n",stopTarget);
+    double stopTargetMin=fmod((fmod(stopTarget,360.0) -  threshhold + 360),360.0);
+    //printf("\n Stop target (min) = %f",stopTargetMin);
+    double stopTargetMax=fmod((fmod(stopTarget,360.0) +  threshhold + 360),360.0);
+
+
+    if (stopTargetMin >= 350.0)
+	stopTargetMax+=360.0;
+    if (current < 30.0)
+	current+=360.0;
+    //printf("\n Stop target (max) = %f",stopTargetMax);
+
+    //Send cmd to arduino
+    //Check TOF
+    while (!pollTOF(sensor,TOFtarget))
+    {
+    	current=getCurrImuYaw(imu);
+    	if (current < 30.0)
+		current+=360.0;
+	//Correct left
+    	//printf("\n current Yaw = %f",current);
+	if (current > stopTargetMax)
+	{
+            turnLeft_waitOnIMU(10, imu, IMUtarget,display,true);
+	    //stop(400,display);
+    	    RS232_SendByte(CPORT_NR, direction);
+    	    RS232_SendByte(CPORT_NR, speed);
+	}
+	//Correct right
+	else if (current < stopTargetMin)
+	{
+	    turnRight_waitOnIMU(10,imu,IMUtarget,display,true);
+	    //stop(400,display);
+    	    RS232_SendByte(CPORT_NR, direction);
+    	    RS232_SendByte(CPORT_NR, speed);
+	}
+	else if (getDistance(tof2) > 225) {
+	    if (tof2->inputNo==2)
+	    	sendCommand(10,20,display); 
+	    else if (tof2->inputNo==5)
+	    	sendCommand(8,20,display); 
+	    while(getDistance(tof2)>200 && !pollTOF(sensor,TOFtarget));
+	    sendCommand(direction,speed,display); 
+	}
+	/*
+	else if (getDistance(tof2) < 150-TOFthreshhold) {
+	    if (tof2->inputNo==2)
+	    	sendCommand(8,20,display); 
+	    else if (tof2->inputNo==5)
+	    	sendCommand(10,20,display); 
+	    while(getDistance(tof2)<=150-TOFthreshhold);
+	    sendCommand(direction,speed,display); 
+	}
+	*/
+	else
+	    continue;
+    }
+}
+
+void diagonal_fwdLeft_waitOnTOF(unsigned char speed, TOF *sensor, int display, int target) {
+    unsigned char direction = 8;
+    //Set direction to STRAFE LEFT
+    RS232_SendByte(CPORT_NR, direction);
+    RS232_SendByte(CPORT_NR, speed);
+    printf("Sent to Arduino: 'Diagonal FWD LEFT at %d'\n", speed);
+    lcdPosition(display,0,0);
+    lcdPrintf(display,"Sent: '%3d %3d'", direction, speed);
+    if (target==100)
+	waitOnTOF(sensor);
+    else
+	waitOnTOF(sensor,target);
+}
+
+void diagonal_fwdRight_waitOnTOF(unsigned char speed, TOF *sensor, int display, int target) {
+    unsigned char direction = 7;
+    //Set direction to STRAFE LEFT
+    RS232_SendByte(CPORT_NR, direction);
+    RS232_SendByte(CPORT_NR, speed);
+    printf("Sent to Arduino: 'Diagonal FWD RIGHT at %d'\n", speed);
+    lcdPosition(display,0,0);
+    lcdPrintf(display,"Sent: '%3d %3d'", direction, speed);
+    if (target==100)
+	waitOnTOF(sensor);
+    else
+	waitOnTOF(sensor,target);
+}
+
+void diagonal_bwdLeft_waitOnTOF(unsigned char speed, TOF *sensor, int display, int target) {
+    unsigned char direction = 10;
+    //Set direction to STRAFE LEFT
+    RS232_SendByte(CPORT_NR, direction);
+    RS232_SendByte(CPORT_NR, speed);
+    printf("Sent to Arduino: 'Diagonal BWD RIGHT at %d'\n", speed);
+    lcdPosition(display,0,0);
+    lcdPrintf(display,"Sent: '%3d %3d'", direction, speed);
+    if (target==100)
+	waitOnTOF(sensor);
+    else
+	waitOnTOF(sensor,target);
+}
+
+void diagonal_bwdRight_waitOnTOF(unsigned char speed, TOF *sensor, int display, int target) {
+    unsigned char direction = 9;
+    //Set direction to STRAFE LEFT
+    RS232_SendByte(CPORT_NR, direction);
+    RS232_SendByte(CPORT_NR, speed);
+    printf("Sent to Arduino: 'Diagonal BWD RIGHT at %d'\n", speed);
+    lcdPosition(display,0,0);
+    lcdPrintf(display,"Sent: '%3d %3d'", direction, speed);
+    if (target==100)
+	waitOnTOF(sensor);
+    else
+	waitOnTOF(sensor,target);
+}
+
 // Turns the robot right about it's center axis at a specified speed for a set amount of time
 void turnRight_timed(unsigned char speed, int runtime, int display){
 	unsigned char direction = 5;												// Set direction to TURN RIGHT									
@@ -872,6 +1004,7 @@ void driveToTOF(unsigned char speed, TOF *tof,int display,int target,bool dir) {
     	else
 	  bwd_waitOnTOF(speed,tof,display,target);
     }
+    return;
 }    
 	
 	

@@ -20,13 +20,14 @@ Motor M[4] =
   {9,25,24,18,50}
 }; 
 
-Motor FlagWheel(5,40,41,2,3);
+Motor FlagWheel(5,39,38,2,3);
 
               
-int ActuatorPins[3] = {6,38,39};
+int ActuatorPins[3] = {6,41,40};
 
 unsigned long lastMilli = 0;
 unsigned char incomingByte[2];
+unsigned char lastcmd = 0;
 int k=0;
 
 void setup() {
@@ -49,17 +50,41 @@ void setup() {
 void loop() {
 
     
-    if (Serial.available()>0) {   
-      incomingByte[0]=Serial.read();
-      delay(10);
-      incomingByte[1]=Serial.read(); 
-      delay(10);
-    } 
+  if (Serial.available()>0) {   
+    incomingByte[0]=Serial.read();
+    delay(10);
+    incomingByte[1]=Serial.read(); 
+    delay(10);
+    if (incomingByte[0]!=lastcmd) {
+      for(int j=0;j<4;j++) {
+        M[j].MPID.SetMode(MANUAL);
+      }  
+      for(int j=0;j<4;j++) {
+	M[j].Output = 0;
+        M[j].MPID.SetMode(AUTOMATIC);
+        M[j].Setpoint = 0;
+      }  
+      lastcmd = incomingByte[0];
+    
+     } 
+   }
    
-    int cmd = incomingByte[0];
-    int Speed = incomingByte[1];
-    //int cmd = 22;
-    //int Speed = 0;
+  int cmd = incomingByte[0];
+  int Speed = incomingByte[1];
+  if (cmd >= 100) {
+    for(int j=0;j<4;j++) {
+      M[j].MPID.SetMode(MANUAL);
+    }  
+  } 
+  else {
+    for(int j=0;j<4;j++) {
+      M[j].Output = 0;
+      M[j].MPID.SetMode(AUTOMATIC);
+      M[j].Setpoint = 0;
+    }  
+  }
+    //int cmd = 8;
+    //int Speed = 100;
     if (cmd==0) {                   //STOP
       for(int j=0;j<4;j++) {
         M[j].run(STOP);
@@ -130,7 +155,6 @@ void loop() {
       M[1].Setpoint = Speed;          
       M[2].Setpoint = 0;
       M[3].Setpoint = Speed;
-      
         
       M[0].run(STOP);                //Give direction of each motor
       M[1].run(FORWARD);
@@ -276,32 +300,17 @@ void loop() {
     }
     else if(cmd == 22){               //Spin Wheel CCW     
       long start = FlagWheel.getPosition();
-      FlagWheel.Setpoint=30;
+      FlagWheel.Setpoint = Speed;
       //FlagWheel.setSpeed(40);
       FlagWheel.run(BACKWARD);
       int i =0;
       int avg = 0;
       while (FlagWheel.getPosition() < start+9600) { 
-/*
-	Serial.print("Position: ");
-	Serial.print(FlagWheel.getPosition());
-	Serial.print("  Current: ");
-	int current = analogRead(A0);
-	Serial.println(current);
-	if (i==0)
-	  avg-=current;
-	if (current != 0) {
-	  i++;
-	  avg+=current;
-	}
-*/
         FlagWheel.updatePID();
 	delay(100);
       }
-	Serial.print("\n AVERAGE: ");
-	Serial.println(avg/i);
-        FlagWheel.Setpoint=0;
         FlagWheel.run(STOP);
+        FlagWheel.Setpoint=0;
 	//delay(10000);
     }
     else if(cmd == 23){               //Linear Actuator Down     
@@ -319,6 +328,76 @@ void loop() {
       digitalWrite(ActuatorPins[2],LOW);
       analogWrite(ActuatorPins[0], 0);
     }
+    else if (cmd==101) {             //FORWARD
+      for(int j=0;j<4;j++) {
+        M[j].run(FORWARD);
+	M[j].setSpeed(Speed);
+      }
+    }
+    else if (cmd==102) {              //BACKWARD
+      for(int j=0;j<4;j++) {
+        M[j].run(BACKWARD);
+	M[j].setSpeed(Speed);
+      }
+    }      
+    else if (cmd==103) {              //Strafe Right
+      Speed = 100;
+      M[0].run(BACKWARD);
+      M[1].run(FORWARD);
+      M[2].run(BACKWARD);
+      M[3].run(FORWARD);
+	M[0].setSpeed(Speed+10);
+	M[1].setSpeed(Speed+10);
+	M[2].setSpeed(Speed);
+	M[3].setSpeed(Speed);
+    }       
+    else if (cmd==104) {              //Strafe Left
+      Speed = 100;
+      M[0].run(FORWARD);
+      M[1].run(BACKWARD);
+      M[2].run(FORWARD);
+      M[3].run(BACKWARD);
+	M[0].setSpeed(Speed+10);
+	M[1].setSpeed(Speed+10);
+	M[2].setSpeed(Speed);
+	M[3].setSpeed(Speed);
+    }
+    else if(cmd == 107){                //Diagonal(Forward-Right)      
+      M[1].setSpeed(Speed+15);          
+      M[3].setSpeed(Speed);
+        
+      M[0].run(STOP);                //Give direction of each motor
+      M[1].run(FORWARD);
+      M[2].run(STOP);
+      M[3].run(FORWARD);
+    }
+    else if(cmd == 108){                //Diagonal(Forward-Left)      
+      M[0].setSpeed(Speed);          //Set the speed of each motor
+      M[2].setSpeed(Speed);
+      
+      M[0].run(FORWARD);
+      M[1].run(STOP);
+      M[2].run(FORWARD);
+      M[3].run(STOP);
+    }
+    else if(cmd == 109){                //Diagonal(Back-Right)      
+      M[0].setSpeed(Speed);              //Set the speed of each motor
+      M[2].setSpeed(Speed);
+      
+      M[0].run(BACKWARD);
+      M[1].run(STOP);
+      M[2].run(BACKWARD);
+      M[3].run(STOP);
+    }
+    else if(cmd == 110){                //Diagonal(Back-Left)      
+      M[1].setSpeed(Speed);          
+      M[3].setSpeed(Speed);    
+    
+      M[0].run(STOP);
+      M[1].run(BACKWARD);
+      M[2].run(STOP);
+      M[3].run(BACKWARD);
+    }
     else {                             //STOP
       for(int j=0;j<4;j++){
         M[j].run(STOP);
@@ -326,13 +405,13 @@ void loop() {
       }
     }    
 
- 
+     
   if((millis()-lastMilli) >= LOOPTIME) {
     lastMilli = millis();
     for(int j=0;j<4;j++) {
       M[j].updatePID();
     }  
-
+    Serial.println();
     k++;
   } 
 

@@ -19,13 +19,13 @@ int stop_readTOF(TOF *sensor, int display);
 void fwd_timed(unsigned char speed, int runtime, int display);
 void fwd_waitOnTOF(unsigned char speed, TOF *sensor, int display, int distance=100);
 void fwd_waitOnIMU(unsigned char speed, RTIMU *imu, char axis, double target, int display);
-void fwd_waitTOFwIMU(unsigned char speed,RTIMU *imu,double IMUtarget,TOF *sensor,int TOFtarget,int display);
+void fwd_waitTOFwIMU(unsigned char speed,RTIMU *imu,double IMUtarget,TOF *sensor,int TOFtarget,int display, int turnSpeed);
 void fwd_wallFollow(unsigned char speed, RTIMU *imu, TOF *sensor, TOF *tof2, double angle, int TOFtarget, int display);
 
 void bwd_timed(unsigned char speed, int runtime, int display);
 void bwd_waitOnTOF(unsigned char speed, TOF *sensor, int display, int distance = 100);
 void bwd_waitOnIMU(unsigned char speed, RTIMU *imu, char axis, double target, int display);
-void bwd_waitTOFwIMU(unsigned char speed,RTIMU *imu,double IMUtarget,TOF *sensor,int TOFtarget,int display);
+void bwd_waitTOFwIMU(unsigned char speed,RTIMU *imu,double IMUtarget,TOF *sensor,int TOFtarget,int display, int turnSpeed);
 void bwd_wallFollow(unsigned char speed, RTIMU *imu, TOF *sensor, TOF *tof2, double angle, int TOFtarget, int display);
 
 void bwdArcRight_waitOnTOF(unsigned char speed, unsigned char offset, TOF *sensor, int display, int distance = 100);
@@ -38,6 +38,12 @@ void strafeLeft_timed(unsigned char speed, int runtime, int display);
 void strafeLeft_waitOnTOF(unsigned char speed, TOF *sensor, int display, int distance = 110);
 void strafeLeft_waitOnIMU(unsigned char speed, RTIMU *imu, char axis, double target, int display);
 void strafeLeft_wallFollow(unsigned char speed, RTIMU *imu, TOF *sensor, TOF *tof2, double angle, int TOFtarget, int display);
+void strafeLeft_wallFollow_d(unsigned char speed, RTIMU *imu, TOF *sensor, TOF *tof2, double angle, int TOFtarget, int display);
+
+void diagonal_fwdLeft_waitOnTOF(unsigned char speed, TOF *sensor, int display, int distance = 110);
+void diagonal_fwdRight_waitOnTOF(unsigned char speed, TOF *sensor, int display, int distance = 110);
+void diagonal_bwdRight_waitOnTOF(unsigned char speed, TOF *sensor, int display, int distance = 110);
+void diagonal_bwdLeft_waitOnTOF(unsigned char speed, TOF *sensor, int display, int distance = 110);
 
 void turnRight_timed(unsigned char speed, int runtime, int display);
 void turnRight_waitOnIMU(unsigned char speed, RTIMU *imu, double targetYaw, int display, bool isAbsolute);

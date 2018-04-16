@@ -13,9 +13,9 @@
 
 #define LOOPTIME    100
 
-#define Kp          0.3
-#define Ki          0.05
-#define Kd          0.15
+#define Kp          0.24
+#define Ki          0.144
+#define Kd          0.06
 
 class Motor
 {
@@ -31,10 +31,10 @@ class Motor
   double  Setpoint;
   double getRPM(long);  
   void changeTunings(double,double,double);
+  double  Input, Output;
 
   private:
   uint8_t PWMpin, IN1pin, IN2pin, MPWM;  
-  double  Input, Output;
   long Position, prevCount; 
 };
 

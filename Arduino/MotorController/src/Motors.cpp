@@ -47,7 +47,7 @@ void Motor::updatePID() {
   Input = getRPM(abs(Position));
   MPID.Compute();
 /*
-  if (PWMpin==8) {
+  if (PWMpin==11) {
     Serial.print("Setpoint:"); Serial.print(Setpoint); Serial.print("  ");
     Serial.print("Input:"); Serial.print(Input); Serial.print("  ");
     Serial.print("Output:"); Serial.print(Output); Serial.print("  ");
@@ -59,12 +59,13 @@ void Motor::updatePID() {
     Serial.print("Output:"); Serial.print(Output); Serial.print("  ");
     Serial.print("MPWM:"); Serial.print(MPWM); Serial.print("  ");
   }
+    Serial.print("Input:"); Serial.print(Input); Serial.print("  ");
 */
   MPWM = constrain(int(MPWM+Output),0,255);
   if (Setpoint==0) 
     MPWM=0; 
 /*
-  if (PWMpin==8) { 
+  if (PWMpin==11) { 
     Serial.print("NewMPWM:"); Serial.print(MPWM); Serial.println("  ");
   }
   if (PWMpin==5) { 
@@ -72,7 +73,6 @@ void Motor::updatePID() {
   }
 */
   setSpeed(MPWM);
-//  Serial.println(MPWM);
 }
 
 
