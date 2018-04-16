@@ -991,7 +991,10 @@ void turnToFlag(RTIMU *imu, double angle, int display) {
 }
 
 void driveToTOF(unsigned char speed, TOF *tof,int display,int target,bool dir) {
+    
     int currDistance=getDistance(tof);
+    //while (currDistance>8000)
+    //  currDistance=getDistance(tof);
     if (target-currDistance >= 0) {
 	if (dir)
 	  bwd_waitOnTOF(speed,tof,display,target);

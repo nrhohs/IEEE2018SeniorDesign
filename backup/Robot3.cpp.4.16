@@ -293,32 +293,28 @@ int main(int argc, char* argv[])
 	while(gpioRead(21)==1);
 	usleep(500000);
 
-	//make sure linear actuator is up
-	sendCommand(23,40,display);
 
 	/*----------------------First Task, Go to Button on Top of Ramp--------------------*/	
 	if (rawcode >= 4){
 		printf("run A");
-		//fwd_waitOnTOF(100*SpeedMult, tof5, display, 150);
-		fwd_waitOnTOF(75*SpeedMult, tof5, display, 85);
+		fwd_waitOnTOF(55*SpeedMult, tof5, display, 85);
 		fwd_timed(30, 100000,  display);
 		stop(100000,display);
 		turn_IMUcorrection(imu,0.0,display);
 		bwd_waitOnTOF(55*SpeedMult, tof5, display, 415);
-		//stop(100000,display);
-		//driveToTOF(20*SpeedMult,tof5,display,515,1);
+		stop(100000,display);
+		driveToTOF(20*SpeedMult,tof5,display,515,1);
 
 	}
 	else{
 		printf("run B");
-		//bwd_waitOnTOF(100*SpeedMult,tof2,display,150);
-		bwd_waitOnTOF(75*SpeedMult,tof2,display,85);
+		bwd_waitOnTOF(55*SpeedMult,tof2,display,85);
 		bwd_timed(30, 100000,  display);
 		stop(100000,display);
 		turn_IMUcorrection(imu,0.0,display);
 		fwd_waitOnTOF(55*SpeedMult, tof2, display, 415);
-		//stop(100000,display);
-		//driveToTOF(20*SpeedMult,tof2,display,540,0);
+		stop(100000*SpeedMult,display);
+		driveToTOF(20*SpeedMult,tof2,display,540,0);
 	}
 	/*----------------------First Task, Go to Button on Top of Ramp--------------------*/	
 
@@ -369,7 +365,7 @@ int main(int argc, char* argv[])
 	if (rawcode%4 < 2){
 		//B button 0
 		/************ Destination B *************************/
-		bwd_waitOnTOF(75*SpeedMult,tof2,display,180);
+		bwd_waitOnTOF(50*SpeedMult,tof2,display,160);
 		bwd_timed(80,250000,display);
 		stop(1000000,display);
 
@@ -438,7 +434,7 @@ int main(int argc, char* argv[])
 	else {
 		//B button 1
 		/****************** Destination B ***********************/
-		fwd_waitOnTOF(75*SpeedMult,tof5,display,180);
+		fwd_waitOnTOF(50*SpeedMult,tof5,display,160);
 		fwd_timed(80,250000,display);
 		stop(100000,display);
 
@@ -495,8 +491,7 @@ int main(int argc, char* argv[])
 		/*************END* Flag Wheel Turning *****************/
 
 		turn_IMUcorrection(imu,0.0,display);
-		//bwd_wallFollow(20,imu,tof0,tof4,0.0,100,display);
-		bwd_wallFollow(25,imu,tof0,tof4,0.0,100,display);
+		bwd_wallFollow(20,imu,tof0,tof4,0.0,100,display);
 		sendCommand(4,20,display);
 		while(getDistance(tof4)>25);
 		turn_IMUcorrection(imu,0.0,display);
@@ -576,39 +571,24 @@ int main(int argc, char* argv[])
 	fwd_waitOnTOF(100,tof5,display,500);
 	stop(500000,display);
 
-	driveToTOF(20*SpeedMult,tof5,display,175,1);
+	driveToTOF(20*SpeedMult,tof5,display,150,1);
 	//bwd_waitOnTOF(50,tof5,display,150);
 	stop(500000,display);
 	turnLeft_waitOnIMU(75*SpeedMult,imu,0.0,display,true);
 	stop(200000,display);
 	turn_IMUcorrection(imu,0.0,display);
 	if (rawcode%2==1) {
-	    fwd_waitOnTOF(75*SpeedMult,tof5,display,85);
+	    fwd_waitOnTOF(50*SpeedMult,tof5,display,85);
 	    fwd_timed(60,200000,display);
 	}
 	else {
-	    bwd_waitOnTOF(75*SpeedMult,tof2,display,85);
+	    bwd_waitOnTOF(50*SpeedMult,tof2,display,85);
 	    bwd_timed(60,200000,display);
 	}
 
 
 	//for future purposes
 	sendCommand(0,0,display);
-	//Delay for route read
-	while(gpioRead(21)==0);
-	while(gpioRead(20)==1) {
-	  lcdPosition(display,0,0);
-	  lcdPrintf(display,"End of Round    ");
-	}
-	  softPwmWrite(0,100);
-	  softPwmWrite(2,0);
-	  softPwmWrite(3,0);
-	lcdPosition(display,0,0);
-	lcdPrintf(display,"Powering Off    ");
-	
-	usleep(2000000);	  
-	//Shutdown pi programmatically
-	system("shutdown now");
 
 	return(0);
 }
