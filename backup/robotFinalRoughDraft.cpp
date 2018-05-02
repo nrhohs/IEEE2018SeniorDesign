@@ -6,7 +6,7 @@
   "-route" follwed by a space and a number hardcodes an IR route
  * Valid routes are 1 - 8.
 
- *******************************************************/
+ ********************************************************
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,7 +26,7 @@
 int main(int argc, char* argv[])
 {
 	double SpeedMult = 1.05;
-	double StopTime  = 0.75*100000; 		//ORIGINAL TIME SET TO 100000	
+	double StopTime  = 100000; 		//ORIGINAL TIME SET TO 100000	
 	//Stop robot on Exit
 	std::atexit(stopExit);
 
@@ -199,13 +199,6 @@ int main(int argc, char* argv[])
 			//Currently (3/20/2018) being used as a debugging flag
 			//for the latter stages of Robot testing
 			else if (strcmp(argv[i],"-pid")==0){
-	sendCommand(24,254,display);
-	usleep(4000000);
-	sendCommand(23,254,display);
-	usleep(200000);
-				//turnLeft_waitOnIMU(150,imu,90.0,display,true); //changed to absolute positioning 3/30 - NRH
-				return 0;
-				/*
 				turnRight_waitOnIMU(75*SpeedMult,imu,90.0,display,true);
 				fwd_waitTOFwIMU(125*SpeedMult,imu,80.0,tof5,300,display,40);
 
@@ -223,7 +216,6 @@ int main(int argc, char* argv[])
 				//strafeLeft_wallFollow_d(30,imu,tof4,tof5,0.0,50,display);
 				//strafeLeft_wallFollow_d(30,imu,tof4,tof5,0.0,30,display);
 				//drive_PID(50,tof5,display,100);
-				*/
 				/*
 				   strafeLeft_wallFollow(30,imu,tof4,tof2,0.0,50,display);
 				   turn_IMUcorrection(imu,0.0,display);
@@ -272,7 +264,7 @@ int main(int argc, char* argv[])
 		}
 		lcdClear(display);
 		lcdPosition(display,0,1);
-		lcdPrintf(display,"Route: %d.",rawcode+1);
+		lcdPrintf(display,"Route: %d",rawcode+1);
 		softPwmWrite(0,0);
 		softPwmWrite(2,100);
 		softPwmWrite(3,0);
@@ -314,9 +306,8 @@ int main(int argc, char* argv[])
 	/*----------------------First Task, Go to Button on Top of Ramp--------------------*/	
 
 	/*------------Second Task, Go Down Ramp, Then Press button on main arena----------*/	
-
 	//Rotate 90 to go down ramp
-	turnLeft_waitOnIMU(130,imu,290.0,display,true); //changed to absolute positioning 3/30 - NRH
+	turnLeft_waitOnIMU(75*SpeedMult,imu,270.0,display,true); //changed to absolute positioning 3/30 - NRH
 	stop(2 * StopTime,display);
 	turn_IMUcorrection(imu,270.0,display);
 
@@ -355,7 +346,7 @@ int main(int argc, char* argv[])
 
 
 	//Rotate 90 to orient flag mech
-	turnRight_waitOnIMU(130,imu,340.0,display,true);
+	turnRight_waitOnIMU(75*SpeedMult,imu,0.0,display,true);
 	stop(2 * StopTime,display);
 	turn_IMUcorrection(imu,0.0,display);
 
@@ -457,15 +448,11 @@ int main(int argc, char* argv[])
 	/*--------------------------Task 4 Pick up Treasure Chest------------------------*/
 
 
-	sendCommand(24,254,display);
 	sendCommand(3,100*SpeedMult,display);	
 	while(getDistance(tof3)<320);
 	stop(StopTime,display);
 	//strafeRight_waitOnTOF(100*SpeedMult,tof3,display,350);
 	strafeRight_timed(125,1000000,display);
-	usleep(1250000);
-	sendCommand(23,254,display);
-	usleep(200000);
 
 	/*
 	//Try to find the box
@@ -548,6 +535,10 @@ int main(int argc, char* argv[])
 	//bwd_timed(20,125000,display);
 	//stop(10000,display);
 */
+	sendCommand(24,254,display);
+	usleep(4000000);
+	sendCommand(23,254,display);
+	usleep(200000);
 
 	//Drive Forward to correct for turn bringing robot to far to the right
 	fwd_timed(40,300000,display);
@@ -558,7 +549,7 @@ int main(int argc, char* argv[])
 	//BACK
 	int back = getDistance(tof2);
 	printf("\n\n FRONT DISTANCE: %d, BACK DISTANCE: %d\n\n",front,back);
-	if (front < 500 || back < 500) {
+	if (front < 8191 || back < 8191) {
 		//TOF correction
 		if (getDistance(tof5)<400) {
 		//driveToTOF(30,tof5,display,400,1);
@@ -568,9 +559,7 @@ int main(int argc, char* argv[])
 //		bwd_timed(80,500000,display);
 	}
 
-	turnRight_waitOnIMU(150,imu,75.0,display,true);
-	//stop(3*StopTime,display);
-	//turn_IMUcorrection(imu,0.0,display);
+	turnRight_waitOnIMU(75*SpeedMult,imu,90.0,display,true);
 
 
 
@@ -580,27 +569,27 @@ int main(int argc, char* argv[])
 
 
 	//NICK WANTS TO ADD SOMETHIMG HERE TO BEAT THE PITCH ISSUE
-	sendCommand(1,200,display);
+	sendCommand(1,150,display);
 	//while(getCurrImuPitch(imu) < 5.0);
 	while(getCurrImuPitch(imu) > 8.0);
 
 	//END OF WILL and Tommy's Guess
 
 	//fwd_waitOnIMU(200,imu,'y',10.0,display);
-	sendCommand(1,150,display);
+	sendCommand(1,100,display);
 	while(getDistance(tof5)>500);
 	//fwd_waitOnTOF(100,tof5,display,500);
 	stop(3 * StopTime,display);
 
 
-	if (getDistance(tof5)<115) {
-		sendCommand(2,40,display);
-		while (getDistance(tof5)<115);
+	if (getDistance(tof5)<150) {
+		sendCommand(2,35*SpeedMult,display);
+		while (getDistance(tof5)<150);
 	}
 	//driveToTOF(20*SpeedMult,tof5,display,175,1);	//PROBLEM
 	//bwd_waitOnTOF(50,tof5,display,150);
 	stop(StopTime,display);
-	turnLeft_waitOnIMU(150,imu,15.0,display,true);
+	turnLeft_waitOnIMU(75*SpeedMult,imu,0.0,display,true);
 	stop(2 * StopTime,display);
 	turn_IMUcorrection(imu,0.0,display);
 	if (rawcode%2==1) {

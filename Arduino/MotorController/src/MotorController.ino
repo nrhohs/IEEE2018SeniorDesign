@@ -298,7 +298,7 @@ void loop() {
       FlagWheel.run(BACKWARD);
       int i =0;
       int avg = 0;
-      while (FlagWheel.getPosition() < start+9600) { 
+      while (FlagWheel.getPosition() < start+9200) { 
         FlagWheel.updatePID();
 	delay(100);
       }

@@ -593,9 +593,9 @@ int main(int argc, char* argv[])
 	stop(3 * StopTime,display);
 
 
-	if (getDistance(tof5)<115) {
+	if (getDistance(tof5)<135) {
 		sendCommand(2,40,display);
-		while (getDistance(tof5)<115);
+		while (getDistance(tof5)<135);
 	}
 	//driveToTOF(20*SpeedMult,tof5,display,175,1);	//PROBLEM
 	//bwd_waitOnTOF(50,tof5,display,150);

@@ -267,11 +267,11 @@ void fwd_waitTOFwIMU(unsigned char speed,RTIMU *imu,double IMUtarget,TOF *sensor
     double current=0.0f;
     double stopTarget=0.0f;
     current=getCurrImuYaw(imu);
-    //printf("\n Current Position: %f\n",current);
+    printf("\n Current Position: %f\n",current);
     stopTarget=IMUtarget;
-    //printf("\n Stop Target: %f\n",stopTarget);
+    printf("\n Stop Target: %f\n",stopTarget);
     double stopTargetMin=fmod((fmod(stopTarget,360.0) -  threshhold + 360),360.0);
-    //printf("\n Stop target (min) = %f",stopTargetMin);
+    printf("\n Stop target (min) = %f",stopTargetMin);
     double stopTargetMax=fmod((fmod(stopTarget,360.0) +  threshhold + 360),360.0);
 
 
@@ -295,7 +295,7 @@ void fwd_waitTOFwIMU(unsigned char speed,RTIMU *imu,double IMUtarget,TOF *sensor
     	if (current < 30.0)
 		current+=360.0;
 	//Correct left
-    	//printf("\n current Yaw = %f",current);
+    	printf("\n current Yaw = %f",current);
 	if (current > stopTargetMax)
 	{
             turnLeft_waitOnIMU(turnSpeed, imu, IMUtarget,display,true);
@@ -746,9 +746,9 @@ void strafeLeft_wallFollow_d(unsigned char speed, RTIMU *imu, TOF *sensor, TOF *
 	}
 	else if (getDistance(tof2) > 225) {
 	    if (tof2->inputNo==2)
-	    	sendCommand(10,20,display); 
+	    	sendCommand(10,160,display); 
 	    else if (tof2->inputNo==5)
-	    	sendCommand(8,20,display); 
+	    	sendCommand(8,160,display); 
 	    while(getDistance(tof2)>200 && !pollTOF(sensor,TOFtarget));
 	    sendCommand(direction,speed,display); 
 	}
@@ -963,15 +963,15 @@ void bwdArcRight_waitOnTOF(unsigned char speed,unsigned char offset, TOF *sensor
 void turn_IMUcorrection(RTIMU *imu, double angle, int display) {
     if (angle==0.0) {
     	if (getCurrImuYaw(imu)<180)
-	    turnLeft_waitOnIMU(20,imu,angle,display,true);
+	    turnLeft_waitOnIMU(35,imu,angle,display,true);
     	else
-	    turnRight_waitOnIMU(20,imu,angle,display,true);
+	    turnRight_waitOnIMU(35,imu,angle,display,true);
     }
     else {
     	if (getCurrImuYaw(imu)>angle)
-	    turnLeft_waitOnIMU(20,imu,angle,display,true);
+	    turnLeft_waitOnIMU(35,imu,angle,display,true);
     	else
-	    turnRight_waitOnIMU(20,imu,angle,display,true);
+	    turnRight_waitOnIMU(35,imu,angle,display,true);
     }
 }
 
